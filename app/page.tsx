@@ -105,24 +105,24 @@ export default function HomePage() {
       </section>
 
       {/* Trust Indicators */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-16 px-4 bg-white border-y border-emerald-100">
         <div className="container mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-black text-orange-600 mb-2">2,500+</div>
-              <p className="text-slate-600">Verified Properties</p>
+            <div className="group hover:scale-105 transition-transform duration-200">
+              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">2,500+</div>
+              <p className="text-slate-600 font-medium">Verified Properties</p>
             </div>
-            <div>
-              <div className="text-3xl font-black text-orange-600 mb-2">15,000+</div>
-              <p className="text-slate-600">Happy Tenants</p>
+            <div className="group hover:scale-105 transition-transform duration-200">
+              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">15,000+</div>
+              <p className="text-slate-600 font-medium">Happy Tenants</p>
             </div>
-            <div>
-              <div className="text-3xl font-black text-orange-600 mb-2">98%</div>
-              <p className="text-slate-600">Success Rate</p>
+            <div className="group hover:scale-105 transition-transform duration-200">
+              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">98%</div>
+              <p className="text-slate-600 font-medium">Success Rate</p>
             </div>
-            <div>
-              <div className="text-3xl font-black text-orange-600 mb-2">24/7</div>
-              <p className="text-slate-600">Community Support</p>
+            <div className="group hover:scale-105 transition-transform duration-200">
+              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">24/7</div>
+              <p className="text-slate-600 font-medium">Community Support</p>
             </div>
           </div>
         </div>
