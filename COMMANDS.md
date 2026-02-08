@@ -1,12 +1,16 @@
-# 🚀 MYYARD - COMMANDS TO RUN
+# 🚀 FINAL COMMANDS - REMOTE SUPABASE
 
-## Step 1: Push Database (Run ONCE)
+## Step 1: Push Database to Remote (ONE TIME)
 
 ```powershell
 cd C:\Users\thwal\Documents\projects\my-yard\app
 
-node push-to-local-supabase.js
+node push-to-remote-supabase.js
 ```
+
+This connects to: **pbyhhzygikyucqogitwj.supabase.co**
+
+---
 
 ## Step 2: Start the App
 
@@ -14,21 +18,25 @@ node push-to-local-supabase.js
 yarn dev
 ```
 
+---
+
 ## Step 3: Open Browser
 
 ```
 http://localhost:3000
 ```
 
----
-
-## What's New:
-
-✅ **FUTURISTIC UI** - Dark theme with glassmorphism, animations, gradients
-✅ **LOCAL Supabase** - Using your local instance
-✅ **All Tables** - 13 tables + 150 locations ready to push
-✅ **Email Auth** - Working with local Supabase
+Press `Ctrl + Shift + R` to hard refresh (clear cache)
 
 ---
 
-**Just run those 2 commands and you're done!** 🎉
+## ✅ What's Connected:
+
+- **Remote Supabase**: pbyhhzygikyucqogitwj.supabase.co
+- **Futuristic Dark UI**: Glassmorphism, animations, gradients
+- **13 Tables**: All property management tables
+- **150+ Locations**: SA townships, suburbs, CBDs
+
+---
+
+**Just 2 commands and you're live!** 🎉
