@@ -3,51 +3,49 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Home, Users, Shield, Star, MapPin, CheckCircle, Search, Zap, TrendingUp, Award, Lock, Globe, ArrowRight, Sparkles, Building2, Heart } from "lucide-react"
+import { Home, Users, Shield, Star, MapPin, CheckCircle, Search, Zap, TrendingUp, Award, Globe, ArrowRight, Sparkles, Building2, Heart, Sun } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black overflow-hidden">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+      {/* Animated Background Shapes */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10"></div>
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-orange-300/30 to-amber-300/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-br from-yellow-300/30 to-orange-300/30 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-gradient-to-br from-amber-300/20 to-yellow-300/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
       <div className="relative z-10">
-        {/* Futuristic Header */}
-        <header className="border-b border-white/10 bg-black/40 backdrop-blur-2xl sticky top-0 z-50">
+        {/* Modern Header */}
+        <header className="border-b border-orange-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3 group cursor-pointer">
+              <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
                 <div className="relative">
                   <Image 
                     src="/myyard-logo.svg" 
                     alt="MyYard" 
-                    width={45} 
-                    height={45}
-                    className="group-hover:scale-110 transition-transform duration-300"
+                    width={50} 
+                    height={50}
+                    className="group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
                   />
-                  <div className="absolute inset-0 bg-emerald-400 blur-xl opacity-0 group-hover:opacity-50 transition-opacity"></div>
                 </div>
                 <div>
-                  <span className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                  <span className="text-2xl font-black bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent">
                     MyYard
                   </span>
-                  <p className="text-[10px] text-emerald-400/80 -mt-1 font-medium tracking-wider uppercase">Future of Township Living</p>
+                  <p className="text-[10px] text-orange-600/80 -mt-1 font-bold tracking-wider uppercase">Where Community Finds Home</p>
                 </div>
-              </div>
+              </Link>
               <div className="flex items-center gap-3">
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 font-medium border border-white/10">
+                  <Button variant="ghost" className="text-slate-700 hover:text-orange-600 hover:bg-orange-50 font-semibold">
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white font-bold shadow-lg shadow-emerald-500/50 hover:shadow-emerald-500/70 transition-all duration-300 group">
-                    Get Started
+                  <Button className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:via-amber-600 hover:to-yellow-600 text-white font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 group">
+                    Get Started Free
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -57,75 +55,67 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="py-32 px-4 relative">
+        <section className="py-24 px-4 relative">
           <div className="container mx-auto">
-            <div className="max-w-5xl mx-auto text-center">
-              <Badge className="mb-8 bg-emerald-500/10 text-emerald-400 border-emerald-500/30 px-6 py-3 font-semibold backdrop-blur-xl">
-                <Sparkles className="w-4 h-4 mr-2 inline" />
-                Powered by AI • Secured by Blockchain
+            <div className="max-w-6xl mx-auto text-center">
+              <Badge className="mb-8 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 border-orange-300 px-6 py-3 font-bold shadow-md">
+                <Sun className="w-4 h-4 mr-2 inline animate-spin" style={{animationDuration: '3s'}} />
+                South Africa's #1 Township Rental Platform
               </Badge>
               
-              <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none">
-                <span className="bg-gradient-to-r from-white via-emerald-200 to-teal-200 bg-clip-text text-transparent block mb-4">
-                  Township Living
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight">
+                <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent block mb-2">
+                  Find Your Perfect
                 </span>
-                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                  Reimagined
+                <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent">
+                  Township Home
                 </span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-white/60 mb-12 max-w-3xl mx-auto leading-relaxed">
-                The future of property rental in South Africa. AI-powered search, instant verification, and blockchain-secured transactions.
+              <p className="text-xl md:text-2xl text-slate-600 mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
+                Connect landlords and tenants across Soweto, Sandton, Khayelitsha and 150+ locations. 
+                <span className="text-orange-600 font-bold"> Fast. Safe. Simple.</span>
               </p>
 
-              {/* Futuristic Search Bar */}
-              <div className="max-w-2xl mx-auto mb-12">
-                <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-1000"></div>
-                  <div className="relative bg-black/80 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="flex-1 relative">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-400" />
-                        <input
-                          type="text"
-                          placeholder="Soweto, Sandton, Khayelitsha..."
-                          className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-white placeholder:text-white/40 backdrop-blur-xl"
-                        />
-                      </div>
-                      <Button className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 px-8 py-4 rounded-xl font-bold shadow-lg shadow-emerald-500/50 group">
-                        <Search className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                        Search Properties
-                      </Button>
+              {/* Search Bar */}
+              <div className="max-w-3xl mx-auto mb-12">
+                <div className="bg-white rounded-3xl p-4 shadow-2xl shadow-orange-500/20 border-2 border-orange-200">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1 relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-500" />
+                      <input
+                        type="text"
+                        placeholder="Search Soweto, Sandton, Khayelitsha..."
+                        className="w-full pl-12 pr-4 py-4 bg-orange-50/50 border-2 border-orange-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-slate-800 placeholder:text-slate-400 font-medium"
+                      />
                     </div>
+                    <Button className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:via-amber-600 hover:to-yellow-600 px-10 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-orange-500/30 group">
+                      <Search className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                      Search Now
+                    </Button>
                   </div>
                 </div>
               </div>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Link href="/auth/register?role=tenant" className="group">
-                  <div className="relative">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-300"></div>
-                    <Button
-                      size="lg"
-                      className="relative w-full sm:w-auto bg-black border-2 border-emerald-500/50 text-white hover:bg-emerald-500/10 px-10 py-7 rounded-2xl font-bold text-lg backdrop-blur-xl"
-                    >
-                      <Users className="mr-3 h-6 w-6" />
-                      Find Your Home
-                    </Button>
-                  </div>
+                <Link href="/auth/register?role=tenant">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-12 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-orange-500/30 hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                  >
+                    <Users className="mr-3 h-6 w-6" />
+                    I'm Looking for a Home
+                  </Button>
                 </Link>
-                <Link href="/auth/register?role=landlord" className="group">
-                  <div className="relative">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-300"></div>
-                    <Button
-                      size="lg"
-                      className="relative w-full sm:w-auto bg-black border-2 border-teal-500/50 text-white hover:bg-teal-500/10 px-10 py-7 rounded-2xl font-bold text-lg backdrop-blur-xl"
-                    >
-                      <Building2 className="mr-3 h-6 w-6" />
-                      List Property
-                    </Button>
-                  </div>
+                <Link href="/auth/register?role=landlord">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-white border-3 border-orange-500 text-orange-600 hover:bg-orange-50 px-12 py-7 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                  >
+                    <Building2 className="mr-3 h-6 w-6" />
+                    I'm a Property Owner
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -133,24 +123,23 @@ export default function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 px-4 border-y border-white/10 bg-white/5 backdrop-blur-xl">
+        <section className="py-16 px-4 bg-white/80 backdrop-blur-xl border-y-2 border-orange-200/50">
           <div className="container mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
-                { number: "2,500+", label: "Properties", icon: Home },
-                { number: "15K+", label: "Happy Tenants", icon: Users },
-                { number: "98%", label: "Success Rate", icon: Award },
-                { number: "24/7", label: "AI Support", icon: Zap },
+                { number: "2,500+", label: "Properties Listed", icon: Home, color: "orange" },
+                { number: "15K+", label: "Happy Tenants", icon: Users, color: "amber" },
+                { number: "98%", label: "Success Rate", icon: Award, color: "yellow" },
+                { number: "24/7", label: "Support", icon: Zap, color: "orange" },
               ].map((stat, i) => (
                 <div key={i} className="text-center group cursor-pointer">
-                  <div className="relative inline-block mb-4">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 blur-xl opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                    <stat.icon className="relative h-12 w-12 mx-auto text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <div className={`inline-block p-4 bg-gradient-to-br from-${stat.color}-100 to-${stat.color}-200 rounded-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                    <stat.icon className={`h-10 w-10 text-${stat.color}-600`} />
                   </div>
-                  <div className="text-5xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
+                  <div className={`text-5xl font-black bg-gradient-to-r from-${stat.color}-600 to-amber-600 bg-clip-text text-transparent mb-2`}>
                     {stat.number}
                   </div>
-                  <p className="text-white/60 font-medium">{stat.label}</p>
+                  <p className="text-slate-600 font-semibold">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -158,14 +147,14 @@ export default function HomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-32 px-4">
+        <section className="py-24 px-4">
           <div className="container mx-auto">
-            <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-                Next-Gen Features
+            <div className="text-center mb-16">
+              <h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-6">
+                Why Choose MyYard?
               </h2>
-              <p className="text-xl text-white/60 max-w-2xl mx-auto">
-                Experience the future of property management with cutting-edge technology
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto font-medium">
+                Everything you need to find or rent properties in South African townships
               </p>
             </div>
 
@@ -173,39 +162,38 @@ export default function HomePage() {
               {[
                 {
                   icon: Shield,
-                  title: "Military-Grade Security",
-                  description: "End-to-end encryption and blockchain-verified transactions",
-                  features: ["256-bit encryption", "Biometric auth", "Smart contracts"]
+                  title: "100% Verified",
+                  description: "Every property and user is verified for your safety and peace of mind",
+                  features: ["Email verification", "Secure profiles", "Safe payments"],
+                  gradient: "from-orange-500 to-amber-500"
+                },
+                {
+                  icon: MapPin,
+                  title: "150+ Locations",
+                  description: "Find homes across all major townships, suburbs, and CBDs in South Africa",
+                  features: ["Smart search", "Township-specific", "GPS integrated"],
+                  gradient: "from-amber-500 to-yellow-500"
                 },
                 {
                   icon: Zap,
-                  title: "AI-Powered Matching",
-                  description: "Machine learning algorithms find your perfect match instantly",
-                  features: ["Smart recommendations", "Predictive analytics", "Auto-screening"]
-                },
-                {
-                  icon: Globe,
-                  title: "Township Network",
-                  description: "150+ locations across South Africa, all digitally mapped",
-                  features: ["Real-time availability", "GPS integration", "Community insights"]
+                  title: "Instant Matching",
+                  description: "Apply to multiple properties with one click and get instant responses",
+                  features: ["One-click apply", "Real-time updates", "Direct messaging"],
+                  gradient: "from-yellow-500 to-orange-500"
                 },
               ].map((feature, i) => (
-                <Card key={i} className="group relative bg-white/5 border-white/10 backdrop-blur-xl hover:bg-white/10 transition-all duration-500">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                  <CardContent className="relative p-8">
-                    <div className="relative inline-block mb-6">
-                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                      <div className="relative bg-gradient-to-br from-emerald-500/20 to-teal-500/20 p-4 rounded-2xl border border-emerald-500/30">
-                        <feature.icon className="h-8 w-8 text-emerald-400" />
-                      </div>
+                <Card key={i} className="group relative bg-white border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 hover:-translate-y-2">
+                  <CardContent className="p-8">
+                    <div className={`inline-block p-4 bg-gradient-to-br ${feature.gradient} rounded-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                      <feature.icon className="h-10 w-10 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
-                    <p className="text-white/60 mb-6 leading-relaxed">{feature.description}</p>
+                    <h3 className="text-2xl font-black text-slate-900 mb-3">{feature.title}</h3>
+                    <p className="text-slate-600 mb-6 leading-relaxed font-medium">{feature.description}</p>
                     <ul className="space-y-3">
                       {feature.features.map((item, j) => (
-                        <li key={j} className="flex items-center text-emerald-400">
-                          <CheckCircle className="h-4 w-4 mr-3 flex-shrink-0" />
-                          <span className="text-white/80">{item}</span>
+                        <li key={j} className="flex items-center text-slate-700 font-medium">
+                          <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0 text-orange-500" />
+                          {item}
                         </li>
                       ))}
                     </ul>
@@ -217,47 +205,43 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-32 px-4 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10"></div>
+        <section className="py-24 px-4 relative bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500">
           <div className="container mx-auto relative">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-                Ready to experience the future?
+              <h2 className="text-5xl md:text-6xl font-black text-white mb-6 drop-shadow-lg">
+                Ready to Find Your Home?
               </h2>
-              <p className="text-xl text-white/60 mb-12">
-                Join thousands of smart landlords and tenants already using MyYard
+              <p className="text-xl text-white/90 mb-12 font-medium">
+                Join thousands of happy tenants and landlords on MyYard today
               </p>
               <Link href="/auth/register">
-                <div className="inline-block group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                  <Button
-                    size="lg"
-                    className="relative bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white px-12 py-8 rounded-2xl font-black text-xl shadow-2xl"
-                  >
-                    Launch Application
-                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
-                  </Button>
-                </div>
+                <Button
+                  size="lg"
+                  className="bg-white text-orange-600 hover:bg-orange-50 px-16 py-8 rounded-2xl font-black text-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300"
+                >
+                  Start Now - It's Free
+                  <ArrowRight className="ml-3 h-8 w-8" />
+                </Button>
               </Link>
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="py-16 px-4 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+        <footer className="py-12 px-4 bg-slate-900 text-white">
           <div className="container mx-auto">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-3 mb-6">
                 <Image src="/myyard-logo.svg" alt="MyYard" width={40} height={40} />
-                <span className="text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                <span className="text-2xl font-black bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
                   MyYard
                 </span>
               </div>
-              <p className="text-white/60 mb-8">
-                Future of Township Living • Powered by Innovation
+              <p className="text-slate-400 mb-6 font-medium">
+                Where Community Finds Home • Built for South Africa
               </p>
-              <p className="text-white/40 text-sm">
-                © 2025 MyYard. All rights reserved. Built with ❤️ for South African Communities.
+              <p className="text-slate-500 text-sm">
+                © 2025 MyYard. All rights reserved.
               </p>
             </div>
           </div>
