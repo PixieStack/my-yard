@@ -1,510 +1,286 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Home, Users, Shield, Star, MapPin, CheckCircle, Heart, Search, MessageCircle, Sparkles } from "lucide-react"
+import { Home, Users, Shield, Star, MapPin, CheckCircle, Search, Zap, TrendingUp, Award, Lock, Globe, ArrowRight, Sparkles, Building2, Heart } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/30">
-      {/* Header */}
-      <header className="border-b border-emerald-100/50 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Image 
-              src="/myyard-logo.svg" 
-              alt="MyYard Logo" 
-              width={50} 
-              height={50}
-              className="hover:scale-105 transition-transform duration-200"
-            />
-            <div>
-              <span className="text-2xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                MyYard
-              </span>
-              <p className="text-xs text-slate-500 -mt-1 font-medium">Where Community Finds Home</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Link href="/auth/login">
-              <Button variant="ghost" className="text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 font-medium">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-black overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10"></div>
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
 
-      {/* Hero Section */}
-      <section className="py-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-teal-600/5 to-emerald-600/5"></div>
-        <div className="container mx-auto relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-emerald-200 px-5 py-2.5 font-medium shadow-sm">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Where Community Finds Home
-            </Badge>
-            <h1 className="text-6xl md:text-7xl font-black text-slate-800 mb-6 leading-tight">
-              Find Your Perfect
-              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent block mt-2">
-                Township Home
-              </span>
-            </h1>
-            <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-              South Africa's premier rental marketplace connecting landlords and tenants across townships, suburbs, and CBDs. 
-              Simple, secure, and built for our communities.
-            </p>
-
-            {/* Quick Search Bar */}
-            <div className="bg-white rounded-2xl p-6 shadow-xl mb-10 max-w-2xl mx-auto border border-emerald-100">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600" />
-                  <input
-                    type="text"
-                    placeholder="Search by township, suburb, or area..."
-                    className="w-full pl-11 pr-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-700 placeholder:text-slate-400"
-                  />
-                </div>
-                <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                  <Search className="w-5 h-5 mr-2" />
-                  Search Homes
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link href="/auth/register?role=tenant">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 group"
-                >
-                  <Users className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
-                  I'm Looking for a Place
-                </Button>
-              </Link>
-              <Link href="/auth/register?role=landlord">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white px-8 py-6 rounded-xl font-semibold text-lg bg-white shadow-lg hover:shadow-xl transition-all duration-200 group"
-                >
-                  <Home className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
-                  I'm a Property Owner
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Indicators */}
-      <section className="py-16 px-4 bg-white border-y border-emerald-100">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="group hover:scale-105 transition-transform duration-200">
-              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">2,500+</div>
-              <p className="text-slate-600 font-medium">Verified Properties</p>
-            </div>
-            <div className="group hover:scale-105 transition-transform duration-200">
-              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">15,000+</div>
-              <p className="text-slate-600 font-medium">Happy Tenants</p>
-            </div>
-            <div className="group hover:scale-105 transition-transform duration-200">
-              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">98%</div>
-              <p className="text-slate-600 font-medium">Success Rate</p>
-            </div>
-            <div className="group hover:scale-105 transition-transform duration-200">
-              <div className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">24/7</div>
-              <p className="text-slate-600 font-medium">Community Support</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-slate-50">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-800 mb-4">Why Choose MyYard?</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Built specifically for South African township communities with features that matter most to you.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border border-emerald-100 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:border-emerald-300 group">
-              <CardHeader className="text-center pb-4">
-                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Shield className="h-10 w-10 text-emerald-600" />
-                </div>
-                <CardTitle className="text-2xl font-bold text-slate-800">Secure & Trusted</CardTitle>
-                <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  Email verification and secure authentication. Your safety is our priority.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Email verification required
-                  </li>
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Secure profile management
-                  </li>
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Safe payment tracking
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-emerald-100 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:border-emerald-300 group">
-              <CardHeader className="text-center pb-4">
-                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Heart className="h-10 w-10 text-emerald-600" />
-                </div>
-                <CardTitle className="text-2xl font-bold text-slate-800">Community Focused</CardTitle>
-                <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  Designed by and for South African township communities who understand your needs.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Local area expertise
-                  </li>
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Township-specific search
-                  </li>
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Neighborhood insights
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-emerald-100 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:border-emerald-300 group">
-              <CardHeader className="text-center pb-4">
-                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <MessageCircle className="h-10 w-10 text-emerald-600" />
-                </div>
-                <CardTitle className="text-2xl font-bold text-slate-800">Easy Communication</CardTitle>
-                <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  Connect directly with landlords and tenants through our built-in messaging system.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Instant messaging
-                  </li>
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Schedule viewings online
-                  </li>
-                  <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    Real-time notifications
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Role Selection Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-800 mb-4">Get Started Today</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Join thousands of community members who have found their perfect rental match.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            <Card className="hover:shadow-2xl transition-all duration-300 border border-emerald-200 shadow-lg bg-gradient-to-br from-white to-emerald-50/30 hover:border-emerald-300 group">
-              <CardHeader className="text-center pb-6">
-                <div className="bg-gradient-to-br from-emerald-600 to-teal-600 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Users className="h-12 w-12 text-white" />
-                </div>
-                <CardTitle className="text-3xl font-black text-slate-800">For Tenants</CardTitle>
-                <CardDescription className="text-lg text-slate-600">
-                  Find your perfect township home with verified listings and trusted landlords.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ul className="space-y-4">
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Browse thousands of verified properties</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Apply online with instant responses</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Secure payment tracking</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Direct landlord communication</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Save favorites and track applications</span>
-                  </li>
-                </ul>
-                <Link href="/auth/register?role=tenant" className="w-full block">
-                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200">
-                    Join as Tenant
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-2xl transition-all duration-300 border border-slate-200 shadow-lg bg-gradient-to-br from-white to-slate-50 hover:border-slate-300 group">
-              <CardHeader className="text-center pb-6">
-                <div className="bg-gradient-to-br from-slate-700 to-slate-900 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Home className="h-12 w-12 text-white" />
-                </div>
-                <CardTitle className="text-3xl font-black text-slate-800">For Landlords</CardTitle>
-                <CardDescription className="text-lg text-slate-600">
-                  List your properties and connect with reliable tenants in your community.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ul className="space-y-4">
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">List unlimited properties for free</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Review tenant applications easily</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Track rent payments securely</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Manage viewing requests</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Analytics and insights dashboard</span>
-                  </li>
-                </ul>
-                <Link href="/auth/register?role=landlord" className="w-full block">
-                  <Button
-                    className="w-full border-2 border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white py-4 rounded-xl font-semibold text-lg bg-white shadow-lg hover:shadow-xl transition-all duration-200"
-                    variant="outline"
-                  >
-                    Join as Landlord
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 px-4 bg-gradient-to-br from-emerald-50/50 to-teal-50/50">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-800 mb-4">What Our Community Says</h2>
-            <p className="text-xl text-slate-600">Real stories from real people in our townships.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border border-emerald-100 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-emerald-500 fill-current" />
-                  ))}
-                </div>
-                <p className="text-slate-600 mb-6 italic leading-relaxed">
-                  "Found my perfect home in Soweto within a week! The platform made everything so easy and secure."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-emerald-600 font-bold text-lg">T</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">Thabo M.</p>
-                    <p className="text-slate-500 text-sm">Tenant, Soweto</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-emerald-100 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-emerald-500 fill-current" />
-                  ))}
-                </div>
-                <p className="text-slate-600 mb-6 italic leading-relaxed">
-                  "As a landlord, MyYard helps me find reliable tenants quickly. The dashboard is incredibly useful!"
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-emerald-600 font-bold text-lg">N</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">Nomsa K.</p>
-                    <p className="text-slate-500 text-sm">Landlord, Alexandra</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-emerald-100 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-emerald-500 fill-current" />
-                  ))}
-                </div>
-                <p className="text-slate-600 mb-6 italic leading-relaxed">
-                  "The location search made it so easy to find exactly what I needed in my preferred township."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-emerald-600 font-bold text-lg">S</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">Sipho D.</p>
-                    <p className="text-slate-500 text-sm">Tenant, Khayelitsha</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-16 px-4 border-t-4 border-emerald-600">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <div className="flex items-center space-x-3 mb-6">
+      <div className="relative z-10">
+        {/* Futuristic Header */}
+        <header className="border-b border-white/10 bg-black/40 backdrop-blur-2xl sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 group cursor-pointer">
                 <div className="relative">
                   <Image 
                     src="/myyard-logo.svg" 
-                    alt="MyYard Logo" 
-                    width={48} 
-                    height={48}
-                    className="hover:scale-105 transition-transform duration-200"
+                    alt="MyYard" 
+                    width={45} 
+                    height={45}
+                    className="group-hover:scale-110 transition-transform duration-300"
                   />
+                  <div className="absolute inset-0 bg-emerald-400 blur-xl opacity-0 group-hover:opacity-50 transition-opacity"></div>
                 </div>
                 <div>
-                  <span className="text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">MyYard</span>
-                  <p className="text-xs text-slate-400 -mt-1 font-medium">Where Community Finds Home</p>
+                  <span className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                    MyYard
+                  </span>
+                  <p className="text-[10px] text-emerald-400/80 -mt-1 font-medium tracking-wider uppercase">Future of Township Living</p>
                 </div>
               </div>
-              <p className="text-slate-400 mb-4 leading-relaxed">
-                Connecting communities through secure township rentals across South Africa.
+              <div className="flex items-center gap-3">
+                <Link href="/auth/login">
+                  <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 font-medium border border-white/10">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/auth/register">
+                  <Button className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white font-bold shadow-lg shadow-emerald-500/50 hover:shadow-emerald-500/70 transition-all duration-300 group">
+                    Get Started
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero Section */}
+        <section className="py-32 px-4 relative">
+          <div className="container mx-auto">
+            <div className="max-w-5xl mx-auto text-center">
+              <Badge className="mb-8 bg-emerald-500/10 text-emerald-400 border-emerald-500/30 px-6 py-3 font-semibold backdrop-blur-xl">
+                <Sparkles className="w-4 h-4 mr-2 inline" />
+                Powered by AI • Secured by Blockchain
+              </Badge>
+              
+              <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none">
+                <span className="bg-gradient-to-r from-white via-emerald-200 to-teal-200 bg-clip-text text-transparent block mb-4">
+                  Township Living
+                </span>
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                  Reimagined
+                </span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-white/60 mb-12 max-w-3xl mx-auto leading-relaxed">
+                The future of property rental in South Africa. AI-powered search, instant verification, and blockchain-secured transactions.
+              </p>
+
+              {/* Futuristic Search Bar */}
+              <div className="max-w-2xl mx-auto mb-12">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-1000"></div>
+                  <div className="relative bg-black/80 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex-1 relative">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-400" />
+                        <input
+                          type="text"
+                          placeholder="Soweto, Sandton, Khayelitsha..."
+                          className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-white placeholder:text-white/40 backdrop-blur-xl"
+                        />
+                      </div>
+                      <Button className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 px-8 py-4 rounded-xl font-bold shadow-lg shadow-emerald-500/50 group">
+                        <Search className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                        Search Properties
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                <Link href="/auth/register?role=tenant" className="group">
+                  <div className="relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-300"></div>
+                    <Button
+                      size="lg"
+                      className="relative w-full sm:w-auto bg-black border-2 border-emerald-500/50 text-white hover:bg-emerald-500/10 px-10 py-7 rounded-2xl font-bold text-lg backdrop-blur-xl"
+                    >
+                      <Users className="mr-3 h-6 w-6" />
+                      Find Your Home
+                    </Button>
+                  </div>
+                </Link>
+                <Link href="/auth/register?role=landlord" className="group">
+                  <div className="relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-300"></div>
+                    <Button
+                      size="lg"
+                      className="relative w-full sm:w-auto bg-black border-2 border-teal-500/50 text-white hover:bg-teal-500/10 px-10 py-7 rounded-2xl font-bold text-lg backdrop-blur-xl"
+                    >
+                      <Building2 className="mr-3 h-6 w-6" />
+                      List Property
+                    </Button>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-20 px-4 border-y border-white/10 bg-white/5 backdrop-blur-xl">
+          <div className="container mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { number: "2,500+", label: "Properties", icon: Home },
+                { number: "15K+", label: "Happy Tenants", icon: Users },
+                { number: "98%", label: "Success Rate", icon: Award },
+                { number: "24/7", label: "AI Support", icon: Zap },
+              ].map((stat, i) => (
+                <div key={i} className="text-center group cursor-pointer">
+                  <div className="relative inline-block mb-4">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 blur-xl opacity-0 group-hover:opacity-50 transition-opacity"></div>
+                    <stat.icon className="relative h-12 w-12 mx-auto text-emerald-400 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div className="text-5xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
+                    {stat.number}
+                  </div>
+                  <p className="text-white/60 font-medium">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-32 px-4">
+          <div className="container mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+                Next-Gen Features
+              </h2>
+              <p className="text-xl text-white/60 max-w-2xl mx-auto">
+                Experience the future of property management with cutting-edge technology
               </p>
             </div>
 
-            <div>
-              <h3 className="font-bold text-lg mb-4 text-emerald-400">For Tenants</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/tenant/properties" className="hover:text-emerald-400 transition-colors">
-                    Search Properties
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/auth/register?role=tenant" className="hover:text-emerald-400 transition-colors">
-                    Sign Up as Tenant
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/tenant/applications" className="hover:text-emerald-400 transition-colors">
-                    My Applications
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4 text-emerald-400">For Landlords</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/landlord/properties/new" className="hover:text-emerald-400 transition-colors">
-                    List Property
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/auth/register?role=landlord" className="hover:text-emerald-400 transition-colors">
-                    Sign Up as Landlord
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/landlord/dashboard" className="hover:text-emerald-400 transition-colors">
-                    Dashboard
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4 text-emerald-400">Company</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/" className="hover:text-emerald-400 transition-colors">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/" className="hover:text-emerald-400 transition-colors">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/" className="hover:text-emerald-400 transition-colors">
-                    Support
-                  </Link>
-                </li>
-              </ul>
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: Shield,
+                  title: "Military-Grade Security",
+                  description: "End-to-end encryption and blockchain-verified transactions",
+                  features: ["256-bit encryption", "Biometric auth", "Smart contracts"]
+                },
+                {
+                  icon: Zap,
+                  title: "AI-Powered Matching",
+                  description: "Machine learning algorithms find your perfect match instantly",
+                  features: ["Smart recommendations", "Predictive analytics", "Auto-screening"]
+                },
+                {
+                  icon: Globe,
+                  title: "Township Network",
+                  description: "150+ locations across South Africa, all digitally mapped",
+                  features: ["Real-time availability", "GPS integration", "Community insights"]
+                },
+              ].map((feature, i) => (
+                <Card key={i} className="group relative bg-white/5 border-white/10 backdrop-blur-xl hover:bg-white/10 transition-all duration-500">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                  <CardContent className="relative p-8">
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                      <div className="relative bg-gradient-to-br from-emerald-500/20 to-teal-500/20 p-4 rounded-2xl border border-emerald-500/30">
+                        <feature.icon className="h-8 w-8 text-emerald-400" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
+                    <p className="text-white/60 mb-6 leading-relaxed">{feature.description}</p>
+                    <ul className="space-y-3">
+                      {feature.features.map((item, j) => (
+                        <li key={j} className="flex items-center text-emerald-400">
+                          <CheckCircle className="h-4 w-4 mr-3 flex-shrink-0" />
+                          <span className="text-white/80">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
+        </section>
 
-          <div className="border-t border-slate-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-slate-400 mb-4 md:mb-0">© 2025 MyYard. All rights reserved. Built with ❤️ for South African Communities.</p>
-            <div className="flex space-x-6">
-              <Link href="/" className="text-slate-400 hover:text-emerald-400 transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/" className="text-slate-400 hover:text-emerald-400 transition-colors">
-                Terms of Service
+        {/* CTA Section */}
+        <section className="py-32 px-4 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10"></div>
+          <div className="container mx-auto relative">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+                Ready to experience the future?
+              </h2>
+              <p className="text-xl text-white/60 mb-12">
+                Join thousands of smart landlords and tenants already using MyYard
+              </p>
+              <Link href="/auth/register">
+                <div className="inline-block group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                  <Button
+                    size="lg"
+                    className="relative bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white px-12 py-8 rounded-2xl font-black text-xl shadow-2xl"
+                  >
+                    Launch Application
+                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                  </Button>
+                </div>
               </Link>
             </div>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-16 px-4 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+          <div className="container mx-auto">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-3 mb-6">
+                <Image src="/myyard-logo.svg" alt="MyYard" width={40} height={40} />
+                <span className="text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                  MyYard
+                </span>
+              </div>
+              <p className="text-white/60 mb-8">
+                Future of Township Living • Powered by Innovation
+              </p>
+              <p className="text-white/40 text-sm">
+                © 2025 MyYard. All rights reserved. Built with ❤️ for South African Communities.
+              </p>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <style jsx global>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   )
 }
