@@ -139,38 +139,38 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <Card className="border border-emerald-100 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:border-emerald-300 group">
               <CardHeader className="text-center pb-4">
-                <div className="bg-orange-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Shield className="h-10 w-10 text-orange-600" />
+                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Shield className="h-10 w-10 text-emerald-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-slate-800">Secure & Verified</CardTitle>
+                <CardTitle className="text-2xl font-bold text-slate-800">Secure & Trusted</CardTitle>
                 <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  Every user is verified with proper documentation. Your safety is our priority.
+                  Email verification and secure authentication. Your safety is our priority.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                    ID verification required
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    Email verification required
                   </li>
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                    Background checks available
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    Secure profile management
                   </li>
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                    Secure payment processing
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    Safe payment tracking
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <Card className="border border-emerald-100 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:border-emerald-300 group">
               <CardHeader className="text-center pb-4">
-                <div className="bg-orange-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Heart className="h-10 w-10 text-orange-600" />
+                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Heart className="h-10 w-10 text-emerald-600" />
                 </div>
                 <CardTitle className="text-2xl font-bold text-slate-800">Community Focused</CardTitle>
                 <CardDescription className="text-slate-600 text-lg leading-relaxed">
@@ -180,25 +180,25 @@ export default function HomePage() {
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     Local area expertise
                   </li>
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                    Community recommendations
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    Township-specific search
                   </li>
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     Neighborhood insights
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <Card className="border border-emerald-100 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white hover:border-emerald-300 group">
               <CardHeader className="text-center pb-4">
-                <div className="bg-orange-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <MessageCircle className="h-10 w-10 text-orange-600" />
+                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <MessageCircle className="h-10 w-10 text-emerald-600" />
                 </div>
                 <CardTitle className="text-2xl font-bold text-slate-800">Easy Communication</CardTitle>
                 <CardDescription className="text-slate-600 text-lg leading-relaxed">
@@ -208,15 +208,15 @@ export default function HomePage() {
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     Instant messaging
                   </li>
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     Schedule viewings online
                   </li>
                   <li className="flex items-center text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     Real-time notifications
                   </li>
                 </ul>
