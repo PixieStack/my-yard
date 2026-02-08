@@ -42,20 +42,23 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-24 px-4 bg-gradient-to-br from-amber-50 to-orange-50">
-        <div className="container mx-auto">
+      <section className="py-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-teal-600/5 to-emerald-600/5"></div>
+        <div className="container mx-auto relative">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 bg-orange-100 text-orange-700 border-orange-200 px-4 py-2">
-              <MapPin className="w-4 h-4 mr-2" />
-              Local Homes. Local People. Real Connections.
+            <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-emerald-200 px-5 py-2.5 font-medium shadow-sm">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Where Community Finds Home
             </Badge>
-            <h1 className="text-6xl font-black text-slate-800 mb-6 leading-tight">
-              Find Your Next Home,
-              <span className="text-orange-600 block"> Right Here in the Community</span>
+            <h1 className="text-6xl md:text-7xl font-black text-slate-800 mb-6 leading-tight">
+              Find Your Perfect
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent block mt-2">
+                Township Home
+              </span>
             </h1>
             <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Your township rental hub — simple, safe, and local. Connect with verified landlords and tenants in South
-              African townships through our community-focused platform.
+              South Africa's premier rental marketplace connecting landlords and tenants across townships, suburbs, and CBDs. 
+              Simple, secure, and built for our communities.
             </p>
 
             {/* Quick Search Bar */}
