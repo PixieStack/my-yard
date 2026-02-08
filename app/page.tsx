@@ -237,9 +237,9 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            <Card className="hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-orange-50">
+            <Card className="hover:shadow-2xl transition-all duration-300 border border-emerald-200 shadow-lg bg-gradient-to-br from-white to-emerald-50/30 hover:border-emerald-300 group">
               <CardHeader className="text-center pb-6">
-                <div className="bg-orange-600 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-600 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Users className="h-12 w-12 text-white" />
                 </div>
                 <CardTitle className="text-3xl font-black text-slate-800">For Tenants</CardTitle>
@@ -250,70 +250,70 @@ export default function HomePage() {
               <CardContent className="space-y-6">
                 <ul className="space-y-4">
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     <span className="text-slate-700">Browse thousands of verified properties</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     <span className="text-slate-700">Apply online with instant responses</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
-                    <span className="text-slate-700">Secure payment processing</span>
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    <span className="text-slate-700">Secure payment tracking</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     <span className="text-slate-700">Direct landlord communication</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
-                    <span className="text-slate-700">Community reviews and ratings</span>
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    <span className="text-slate-700">Save favorites and track applications</span>
                   </li>
                 </ul>
                 <Link href="/auth/register?role=tenant" className="w-full block">
-                  <Button className="w-full bg-orange-600 hover:bg-orange-500 text-white py-4 rounded-xl font-semibold text-lg">
+                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200">
                     Join as Tenant
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-slate-50">
+            <Card className="hover:shadow-2xl transition-all duration-300 border border-slate-200 shadow-lg bg-gradient-to-br from-white to-slate-50 hover:border-slate-300 group">
               <CardHeader className="text-center pb-6">
-                <div className="bg-slate-700 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <div className="bg-gradient-to-br from-slate-700 to-slate-900 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Home className="h-12 w-12 text-white" />
                 </div>
                 <CardTitle className="text-3xl font-black text-slate-800">For Landlords</CardTitle>
                 <CardDescription className="text-lg text-slate-600">
-                  List your properties and connect with reliable, verified tenants in your community.
+                  List your properties and connect with reliable tenants in your community.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <ul className="space-y-4">
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     <span className="text-slate-700">List unlimited properties for free</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
-                    <span className="text-slate-700">Screen and verify tenant applications</span>
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    <span className="text-slate-700">Review tenant applications easily</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
-                    <span className="text-slate-700">Collect rent payments securely</span>
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    <span className="text-slate-700">Track rent payments securely</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
-                    <span className="text-slate-700">Manage maintenance requests</span>
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    <span className="text-slate-700">Manage viewing requests</span>
                   </li>
                   <li className="flex items-center">
-                    <Star className="h-5 w-5 text-orange-500 mr-3" />
+                    <Star className="h-5 w-5 text-emerald-500 mr-3 flex-shrink-0" />
                     <span className="text-slate-700">Analytics and insights dashboard</span>
                   </li>
                 </ul>
                 <Link href="/auth/register?role=landlord" className="w-full block">
                   <Button
-                    className="w-full border-2 border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white py-4 rounded-xl font-semibold text-lg bg-transparent"
+                    className="w-full border-2 border-slate-700 text-slate-700 hover:bg-slate-700 hover:text-white py-4 rounded-xl font-semibold text-lg bg-white shadow-lg hover:shadow-xl transition-all duration-200"
                     variant="outline"
                   >
                     Join as Landlord
