@@ -2,19 +2,20 @@ const { Client } = require('pg')
 const fs = require('fs')
 const path = require('path')
 
-async function pushToLocalSupabase() {
-  console.log('🚀 Pushing MyYard Database to LOCAL Supabase...\n')
+async function pushToRemoteSupabase() {
+  console.log('🚀 Pushing MyYard Database to REMOTE Supabase...\n')
 
   const client = new Client({
-    host: '127.0.0.1',
-    port: 54322,
+    host: 'db.pbyhhzygikyucqogitwj.supabase.co',
+    port: 5432,
     database: 'postgres',
     user: 'postgres',
-    password: 'postgres'
+    password: 'Tt@{199&0423%}(#eden!)',
+    ssl: { rejectUnauthorized: false }
   })
 
   try {
-    console.log('🔌 Connecting to Local Supabase...')
+    console.log('🔌 Connecting to Remote Supabase...')
     await client.connect()
     console.log('✅ Connected!\n')
 
@@ -37,7 +38,7 @@ async function pushToLocalSupabase() {
     console.log('✅ Locations inserted successfully!\n')
 
     console.log('🎉 DATABASE SETUP COMPLETE!\n')
-    console.log('✅ All tables created in LOCAL Supabase')
+    console.log('✅ All tables created in REMOTE Supabase')
     console.log('✅ 150+ SA locations added')
     console.log('✅ Security policies enabled')
     console.log('\n🚀 Now run: yarn dev')
@@ -56,4 +57,4 @@ async function pushToLocalSupabase() {
   }
 }
 
-pushToLocalSupabase()
+pushToRemoteSupabase()
