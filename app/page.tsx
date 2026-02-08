@@ -404,82 +404,88 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-800 text-white py-16 px-4">
+      <footer className="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-16 px-4 border-t-4 border-emerald-600">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center space-x-3 mb-6">
-                <div className="bg-orange-600 p-2 rounded-xl">
-                  <Home className="h-6 w-6 text-white" />
+                <div className="relative">
+                  <Image 
+                    src="/myyard-logo.svg" 
+                    alt="MyYard Logo" 
+                    width={48} 
+                    height={48}
+                    className="hover:scale-105 transition-transform duration-200"
+                  />
                 </div>
                 <div>
-                  <span className="text-2xl font-black">MyYard</span>
-                  <p className="text-xs text-slate-400 -mt-1">Township Rentals</p>
+                  <span className="text-2xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">MyYard</span>
+                  <p className="text-xs text-slate-400 -mt-1 font-medium">Where Community Finds Home</p>
                 </div>
               </div>
-              <p className="text-slate-400 mb-4">
+              <p className="text-slate-400 mb-4 leading-relaxed">
                 Connecting communities through secure township rentals across South Africa.
               </p>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-4">For Tenants</h3>
+              <h3 className="font-bold text-lg mb-4 text-emerald-400">For Tenants</h3>
               <ul className="space-y-2 text-slate-400">
                 <li>
-                  <Link href="/search" className="hover:text-white">
+                  <Link href="/tenant/properties" className="hover:text-emerald-400 transition-colors">
                     Search Properties
                   </Link>
                 </li>
                 <li>
-                  <Link href="/how-it-works" className="hover:text-white">
-                    How It Works
+                  <Link href="/auth/register?role=tenant" className="hover:text-emerald-400 transition-colors">
+                    Sign Up as Tenant
                   </Link>
                 </li>
                 <li>
-                  <Link href="/safety" className="hover:text-white">
-                    Safety Tips
+                  <Link href="/tenant/applications" className="hover:text-emerald-400 transition-colors">
+                    My Applications
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-4">For Landlords</h3>
+              <h3 className="font-bold text-lg mb-4 text-emerald-400">For Landlords</h3>
               <ul className="space-y-2 text-slate-400">
                 <li>
-                  <Link href="/list-property" className="hover:text-white">
+                  <Link href="/landlord/properties/new" className="hover:text-emerald-400 transition-colors">
                     List Property
                   </Link>
                 </li>
                 <li>
-                  <Link href="/landlord-guide" className="hover:text-white">
-                    Landlord Guide
+                  <Link href="/auth/register?role=landlord" className="hover:text-emerald-400 transition-colors">
+                    Sign Up as Landlord
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pricing" className="hover:text-white">
-                    Pricing
+                  <Link href="/landlord/dashboard" className="hover:text-emerald-400 transition-colors">
+                    Dashboard
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-4">Support</h3>
+              <h3 className="font-bold text-lg mb-4 text-emerald-400">Company</h3>
               <ul className="space-y-2 text-slate-400">
                 <li>
-                  <Link href="/help" className="hover:text-white">
-                    Help Center
+                  <Link href="/" className="hover:text-emerald-400 transition-colors">
+                    About Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-white">
-                    Contact Us
+                  <Link href="/" className="hover:text-emerald-400 transition-colors">
+                    Contact
                   </Link>
                 </li>
                 <li>
-                  <Link href="/community" className="hover:text-white">
-                    Community
+                  <Link href="/" className="hover:text-emerald-400 transition-colors">
+                    Support
                   </Link>
                 </li>
               </ul>
@@ -487,12 +493,12 @@ export default function HomePage() {
           </div>
 
           <div className="border-t border-slate-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-slate-400 mb-4 md:mb-0">© 2024 MyYard. All rights reserved.</p>
+            <p className="text-slate-400 mb-4 md:mb-0">© 2025 MyYard. All rights reserved. Built with ❤️ for South African Communities.</p>
             <div className="flex space-x-6">
-              <Link href="/privacy" className="text-slate-400 hover:text-white">
+              <Link href="/" className="text-slate-400 hover:text-emerald-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-slate-400 hover:text-white">
+              <Link href="/" className="text-slate-400 hover:text-emerald-400 transition-colors">
                 Terms of Service
               </Link>
             </div>
