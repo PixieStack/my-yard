@@ -3,10 +3,15 @@
 echo "🚀 Setting up MyYard Database..."
 echo ""
 
-DB_URL="postgresql://postgres:Tt@{199&0423%}(#eden!)@db.pbyhhzygikyucqogitwj.supabase.co:5432/postgres"
+# Database credentials
+export PGHOST="db.pbyhhzygikyucqogitwj.supabase.co"
+export PGPORT="5432"
+export PGDATABASE="postgres"
+export PGUSER="postgres"
+export PGPASSWORD='Tt@{199&0423%}(#eden!)'
 
 echo "📊 Step 1: Creating database schema..."
-psql "$DB_URL" -f /app/scripts/complete-setup.sql
+psql -f /app/scripts/complete-setup.sql
 
 if [ $? -eq 0 ]; then
     echo "✅ Database schema created successfully!"
@@ -17,7 +22,7 @@ fi
 
 echo ""
 echo "🗺️ Step 2: Inserting South African locations..."
-psql "$DB_URL" -f /app/scripts/insert-locations.sql
+psql -f /app/scripts/insert-locations.sql
 
 if [ $? -eq 0 ]; then
     echo "✅ Locations inserted successfully!"
@@ -28,6 +33,8 @@ fi
 
 echo ""
 echo "🎉 Database setup complete!"
+echo "✅ All tables created"
+echo "✅ 150+ SA locations added"
 echo ""
-echo "Run: yarn dev"
+echo "Now run: yarn dev"
 echo "Then open: http://localhost:3000"
