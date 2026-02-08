@@ -62,16 +62,17 @@ export default function HomePage() {
             </p>
 
             {/* Quick Search Bar */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg mb-10 max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl p-6 shadow-xl mb-10 max-w-2xl mx-auto border border-emerald-100">
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
+                <div className="flex-1 relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600" />
                   <input
                     type="text"
-                    placeholder="Search by township or area..."
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Search by township, suburb, or area..."
+                    className="w-full pl-11 pr-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-700 placeholder:text-slate-400"
                   />
                 </div>
-                <Button className="bg-orange-600 hover:bg-orange-500 px-8 py-3 rounded-xl">
+                <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                   <Search className="w-5 h-5 mr-2" />
                   Search Homes
                 </Button>
@@ -82,9 +83,9 @@ export default function HomePage() {
               <Link href="/auth/register?role=tenant">
                 <Button
                   size="lg"
-                  className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-xl font-semibold text-lg"
+                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 group"
                 >
-                  <Users className="mr-3 h-6 w-6" />
+                  <Users className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
                   I'm Looking for a Place
                 </Button>
               </Link>
@@ -92,9 +93,9 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white px-8 py-4 rounded-xl font-semibold text-lg bg-transparent"
+                  className="w-full sm:w-auto border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white px-8 py-6 rounded-xl font-semibold text-lg bg-white shadow-lg hover:shadow-xl transition-all duration-200 group"
                 >
-                  <Home className="mr-3 h-6 w-6" />
+                  <Home className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
                   I'm a Property Owner
                 </Button>
               </Link>
