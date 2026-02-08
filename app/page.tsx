@@ -326,7 +326,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 px-4 bg-orange-50">
+      <section className="py-20 px-4 bg-gradient-to-br from-emerald-50/50 to-teal-50/50">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-black text-slate-800 mb-4">What Our Community Says</h2>
@@ -334,20 +334,19 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg bg-white">
+            <Card className="border border-emerald-100 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8">
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-orange-500 fill-current" />
+                    <Star key={i} className="h-5 w-5 text-emerald-500 fill-current" />
                   ))}
                 </div>
-                <p className="text-slate-600 mb-6 italic">
-                  "Found my perfect home in Soweto within a week! The landlord was verified and the process was so
-                  smooth."
+                <p className="text-slate-600 mb-6 italic leading-relaxed">
+                  "Found my perfect home in Soweto within a week! The platform made everything so easy and secure."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-orange-600 font-bold">T</span>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mr-4">
+                    <span className="text-emerald-600 font-bold text-lg">T</span>
                   </div>
                   <div>
                     <p className="font-semibold text-slate-800">Thabo M.</p>
@@ -357,20 +356,19 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-white">
+            <Card className="border border-emerald-100 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8">
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-orange-500 fill-current" />
+                    <Star key={i} className="h-5 w-5 text-emerald-500 fill-current" />
                   ))}
                 </div>
-                <p className="text-slate-600 mb-6 italic">
-                  "As a landlord, I love how easy it is to find reliable tenants. The verification process gives me
-                  peace of mind."
+                <p className="text-slate-600 mb-6 italic leading-relaxed">
+                  "As a landlord, MyYard helps me find reliable tenants quickly. The dashboard is incredibly useful!"
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-orange-600 font-bold">N</span>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mr-4">
+                    <span className="text-emerald-600 font-bold text-lg">N</span>
                   </div>
                   <div>
                     <p className="font-semibold text-slate-800">Nomsa K.</p>
@@ -380,19 +378,19 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-white">
+            <Card className="border border-emerald-100 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8">
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-orange-500 fill-current" />
+                    <Star key={i} className="h-5 w-5 text-emerald-500 fill-current" />
                   ))}
                 </div>
-                <p className="text-slate-600 mb-6 italic">
-                  "The community support is amazing. When I had questions, they helped me every step of the way."
+                <p className="text-slate-600 mb-6 italic leading-relaxed">
+                  "The location search made it so easy to find exactly what I needed in my preferred township."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-orange-600 font-bold">S</span>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mr-4">
+                    <span className="text-emerald-600 font-bold text-lg">S</span>
                   </div>
                   <div>
                     <p className="font-semibold text-slate-800">Sipho D.</p>
