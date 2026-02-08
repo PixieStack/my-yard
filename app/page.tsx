@@ -1,32 +1,41 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Home, Users, Shield, Star, MapPin, CheckCircle, Heart, Search, MessageCircle } from "lucide-react"
+import { Home, Users, Shield, Star, MapPin, CheckCircle, Heart, Search, MessageCircle, Sparkles } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/30">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-emerald-100/50 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-orange-600 p-2 rounded-xl">
-              <Home className="h-6 w-6 text-white" />
-            </div>
+            <Image 
+              src="/myyard-logo.svg" 
+              alt="MyYard Logo" 
+              width={50} 
+              height={50}
+              className="hover:scale-105 transition-transform duration-200"
+            />
             <div>
-              <span className="text-2xl font-black text-slate-700">MyYard</span>
-              <p className="text-xs text-slate-500 -mt-1">Township Rentals</p>
+              <span className="text-2xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                MyYard
+              </span>
+              <p className="text-xs text-slate-500 -mt-1 font-medium">Where Community Finds Home</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <Link href="/auth/login">
-              <Button variant="ghost" className="text-slate-600 hover:text-orange-600">
+              <Button variant="ghost" className="text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 font-medium">
                 Sign In
               </Button>
             </Link>
             <Link href="/auth/register">
-              <Button className="bg-orange-600 hover:bg-orange-500 text-white font-semibold">Get Started</Button>
+              <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
+                Get Started
+              </Button>
             </Link>
           </div>
         </div>
