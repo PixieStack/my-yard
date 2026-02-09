@@ -23,17 +23,16 @@ echo Installing dependencies...
 call npm install
 
 echo.
-echo Pushing database schema...
-call node push-to-remote-supabase.js
-
-echo.
 echo ========================================
 echo   SETUP COMPLETE!
 echo ========================================
 echo.
+echo Database tables should already be created in Supabase.
+echo If not, run the SQL files in /scripts folder manually.
+echo.
 echo To start the app:
 echo   npm run dev
 echo.
-echo Then open: http://localhost:3000
+echo Then open in INCOGNITO: http://localhost:3000
 echo.
 pause
