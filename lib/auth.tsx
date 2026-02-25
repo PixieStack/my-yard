@@ -36,20 +36,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      let retryCount = 0
-      const maxRetries = 3
-
-      while (retryCount < maxRetries) {
+  const fetchProfile = async (userId: string, signal?: AbortSignal): Promise<Profile | null> => {
+    const maxRetries = 3
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      if (signal?.aborted) return null
+      try {
         const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle()
 
         if (error) {
-          console.error(`Error fetching profile (attempt ${retryCount + 1}):`, error)
-          retryCount++
-          if (retryCount < maxRetries) {
-            // Wait before retrying
-            await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount))
+          const message = error.message || error.code || JSON.stringify(error)
+          console.error(`Error fetching profile (attempt ${attempt + 1}/${maxRetries}): ${message}`)
+          if (attempt < maxRetries - 1) {
+            // Exponential backoff: 500ms, 1000ms
+            await new Promise((resolve) => setTimeout(resolve, 500 * Math.pow(2, attempt)))
             continue
           }
           return null
@@ -61,13 +60,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         return data as Profile
+      } catch (err) {
+        const message = err instanceof Error ? err.message : JSON.stringify(err)
+        console.error(`Unexpected error fetching profile (attempt ${attempt + 1}/${maxRetries}): ${message}`)
+        if (attempt < maxRetries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500 * Math.pow(2, attempt)))
+          continue
+        }
+        return null
       }
-
-      return null
-    } catch (err) {
-      console.error("Unexpected error fetching profile:", err)
-      return null
     }
+    return null
   }
 
   const refreshProfile = async () => {
@@ -78,48 +81,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+    // Track the current in-flight fetch so we can cancel it when auth state changes again
+    let abortController: AbortController | null = null
 
-        if (session?.user) {
-          setUser(session.user)
-          const profileData = await fetchProfile(session.user.id)
-          setProfile(profileData)
-        }
-      } catch (error) {
-        console.error("Error getting initial session:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    getInitialSession()
-
-    // Listen for auth changes
+    // Use only onAuthStateChange — it fires INITIAL_SESSION on mount, which
+    // covers the same ground as a separate getSession() call and avoids the
+    // Navigator LockManager contention caused by running both simultaneously.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Cancel any previous in-flight profile fetch
+      abortController?.abort()
+      abortController = new AbortController()
+      const { signal } = abortController
+
       try {
         if (session?.user) {
           setUser(session.user)
-          const profileData = await fetchProfile(session.user.id)
-          setProfile(profileData)
+          const profileData = await fetchProfile(session.user.id, signal)
+          if (!signal.aborted) {
+            setProfile(profileData)
+          }
         } else {
           setUser(null)
           setProfile(null)
         }
       } catch (error) {
-        console.error("Error in auth state change:", error)
+        const message = error instanceof Error ? error.message : JSON.stringify(error)
+        console.error("Error in auth state change:", message)
       } finally {
-        setLoading(false)
+        if (!signal.aborted) {
+          setLoading(false)
+        }
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      abortController?.abort()
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signOut = async () => {
