@@ -56,7 +56,7 @@ interface LeaseTerminationRequest {
 }
 
 export default function TenantSettingsPage() {
-  const { profile, updateProfile } = useAuth()
+  const { profile } = useAuth()
   const [tenantProfile, setTenantProfile] = useState<TenantProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -70,9 +70,21 @@ export default function TenantSettingsPage() {
     notice_period_days: 30,
   })
   const [activeLeases, setActiveLeases] = useState<any[]>([])
+  const [personalData, setPersonalData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+  })
 
   useEffect(() => {
     if (profile?.id) {
+      setPersonalData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+      })
       fetchTenantProfile()
       fetchActiveLeases()
     }
@@ -159,10 +171,9 @@ export default function TenantSettingsPage() {
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
-          first_name: profile?.first_name,
-          last_name: profile?.last_name,
-          email: profile?.email,
-          phone: profile?.phone,
+          first_name: personalData.first_name,
+          last_name: personalData.last_name,
+          phone: personalData.phone,
         })
         .eq("id", profile?.id)
 
@@ -267,16 +278,16 @@ export default function TenantSettingsPage() {
               <Label htmlFor="first_name">First Name</Label>
               <Input
                 id="first_name"
-                value={profile?.first_name || ""}
-                onChange={(e) => updateProfile({ first_name: e.target.value })}
+                value={personalData.first_name}
+                onChange={(e) => setPersonalData((prev) => ({ ...prev, first_name: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="last_name">Last Name</Label>
               <Input
                 id="last_name"
-                value={profile?.last_name || ""}
-                onChange={(e) => updateProfile({ last_name: e.target.value })}
+                value={personalData.last_name}
+                onChange={(e) => setPersonalData((prev) => ({ ...prev, last_name: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
@@ -284,16 +295,18 @@ export default function TenantSettingsPage() {
               <Input
                 id="email"
                 type="email"
-                value={profile?.email || ""}
-                onChange={(e) => updateProfile({ email: e.target.value })}
+                value={personalData.email}
+                disabled
+                className="bg-gray-50"
               />
+              <p className="text-xs text-gray-500">Email cannot be changed</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
-                value={profile?.phone || ""}
-                onChange={(e) => updateProfile({ phone: e.target.value })}
+                value={personalData.phone}
+                onChange={(e) => setPersonalData((prev) => ({ ...prev, phone: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
