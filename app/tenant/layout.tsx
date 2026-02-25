@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { NotificationBell } from "@/components/notification-bell"
 import { useAuth } from "@/lib/auth"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Home, Search, FileText, CreditCard, MessageSquare, Heart, Settings, LogOut } from "lucide-react"
 
@@ -36,10 +37,16 @@ export default function TenantLayout({
           <div className="flex h-full flex-col">
             {/* Logo */}
             <div className="flex h-16 items-center justify-center border-b">
-              <div className="flex items-center space-x-2">
-                <Home className="h-8 w-8 text-blue-600" />
+              <Link href="/tenant/dashboard" className="flex items-center space-x-2">
+                <Image
+                  src="https://ffkvytgvdqipscackxyg.supabase.co/storage/v1/object/public/public-assets/my-yard-logo.png"
+                  alt="MyYard"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                />
                 <span className="text-xl font-bold text-gray-900">MyYard</span>
-              </div>
+              </Link>
             </div>
 
             {/* Navigation */}
