@@ -25,7 +25,7 @@ interface LandlordProfile {
 }
 
 export default function SettingsPage() {
-  const { profile, updateProfile } = useAuth()
+  const { profile, refreshProfile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -108,7 +108,7 @@ export default function SettingsPage() {
       if (error) throw error
 
       setSuccess("Personal information updated successfully")
-      updateProfile()
+      refreshProfile()
     } catch (error: any) {
       setError(error.message)
     } finally {
