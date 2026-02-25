@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -44,11 +45,12 @@ interface Township {
 
 export default function BrowsePropertiesPage() {
   const { profile } = useAuth()
+  const searchParams = useSearchParams()
   const [properties, setProperties] = useState<Property[]>([])
   const [townships, setTownships] = useState<Township[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "")
   const [selectedTownship, setSelectedTownship] = useState<string>("all")
   const [propertyType, setPropertyType] = useState<string>("all")
   const [priceRange, setPriceRange] = useState([0, 10000])
