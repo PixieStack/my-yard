@@ -36,15 +36,12 @@ export default function LoginPage() {
 
       if (authError) throw authError
 
-      // Get user profile to determine role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single()
+      // Use role from user_metadata (set at registration) to avoid a separate
+      // profile fetch here, which would race with AuthProvider's onAuthStateChange.
+      const role = data.user.user_metadata?.role
 
       // Redirect based on role
-      if (profile?.role === 'landlord') {
+      if (role === 'landlord') {
         router.push('/landlord/dashboard')
       } else {
         router.push('/tenant/dashboard')
