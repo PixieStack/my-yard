@@ -609,6 +609,7 @@ export default function TenantPaymentsPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Stats Cards */}
