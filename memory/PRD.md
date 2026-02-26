@@ -9,6 +9,7 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 - **Auth**: Supabase Auth
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Payments**: Ozow (placeholder, awaiting API key)
+- **Image Storage**: Supabase Storage
 
 ---
 
@@ -26,7 +27,8 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 ### Phase 1: Data & API Layer (COMPLETE)
 - [x] 873 townships (static data source)
 - [x] `/api/townships` with search + province filter
-- [x] `/api/properties/by-township`
+- [x] `/api/properties/by-township` with new location field support
+- [x] `/api/properties` POST with server-side validation
 - [x] Home search autocomplete
 
 ### Phase 2: Messaging (COMPLETE)
@@ -57,6 +59,17 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 - [x] 870+ locations stat
 - [x] Leases nav in both sidebars
 
+### Phase 6: Property Creation Fixes (COMPLETE - Dec 2025)
+- [x] Fixed TypeScript error in townships.ts (added "informal" type)
+- [x] Replaced DB-dependent township dropdown with static data search
+- [x] Fixed memory leak from URL.createObjectURL (proper cleanup)
+- [x] Added client-side date validation (no past dates)
+- [x] Added cross-field validation (min lease ≤ preferred lease)
+- [x] Specific error messages for form validation
+- [x] Server-side validation in /api/properties endpoint
+- [x] New location columns migration script
+- [x] Supabase Storage integration for property images
+
 ---
 
 ## Key Business Rules
@@ -73,7 +86,6 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 - [ ] Create `notifications` table in Supabase
 - [ ] Automated rent reminders
 - [ ] Deposit return flow
-- [ ] Property image upload
 - [ ] Advanced search filters on home page
 - [ ] Performance optimization
 
@@ -85,6 +97,7 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 profiles, properties, property_images, applications, viewing_requests, messages, leases, payments, favorites, reviews, townships
 
 ### Key Fields
+- **properties**: Now includes `location_name`, `location_city`, `location_province` columns
 - **leases.lease_terms**: JSON storing full LeaseConfig (extras, calculations, signatures, options)
 - **payments.payment_type**: 'move_in' | 'monthly_rent' | 'admin_fee' | 'cancel_penalty' | 'deposit_return'
 - **payments.transaction_reference**: Unique ref for Ozow tracking
@@ -92,10 +105,17 @@ profiles, properties, property_images, applications, viewing_requests, messages,
 ### Missing Tables
 - notifications (SQL script at `/app/scripts/create-notifications-table.sql`)
 
+### Required Migrations
+1. `/scripts/add-location-columns-migration.sql` - Adds location columns to properties
+2. `/scripts/setup-storage-bucket.sql` - Creates property-images storage bucket
+
 ---
 
 ## Key Files
 - `/app/lib/lease-utils.ts` - Shared calculation logic, types, constants
+- `/app/lib/data/townships.ts` - Static township data with search functions
+- `/app/app/landlord/properties/new/page.tsx` - Property creation form (fixed)
+- `/app/app/api/properties/route.ts` - Property CRUD with server-side validation
 - `/app/app/landlord/leases/page.tsx` - Landlord lease creation (full flow)
 - `/app/app/tenant/leases/page.tsx` - Tenant lease view/sign/pay
 - `/app/app/api/payments/ozow/route.ts` - Ozow payment API
@@ -107,14 +127,6 @@ profiles, properties, property_images, applications, viewing_requests, messages,
 - Iteration 1: 11/11 passed (100%)
 - Iteration 2: 16/16 passed (100%)  
 - Iteration 3: 17/17 passed (100%)
-
-## Key Files
-- `/app/lib/lease-utils.ts` - Lease calculation logic
-- `/app/app/api/auth/send-verification/route.ts` - Brevo SMTP
-- `/app/app/api/payments/ozow/route.ts` - Ozow payment API
-- `/app/components/auth-guard.tsx` - Route protection
-- `/app/app/landlord/leases/page.tsx` - Landlord lease management
-- `/app/app/tenant/leases/page.tsx` - Tenant lease view/sign/pay
 
 ## Environment
 - App URL: https://code-analyzer-284.preview.emergentagent.com
