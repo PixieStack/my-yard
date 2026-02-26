@@ -12,17 +12,44 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // Get session from URL hash (OAuth callback)
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
         if (sessionError) throw sessionError
 
         if (session?.user) {
+          // Check if profile exists
           const { data: profile } = await supabase
             .from("profiles")
             .select("role")
             .eq("id", session.user.id)
             .maybeSingle()
 
+          if (profile?.role) {
+            // Profile exists, redirect to appropriate dashboard
+            if (profile.role === "landlord") {
+              router.replace("/landlord/dashboard")
+            } else {
+              router.replace("/tenant/dashboard")
+            }
+          } else {
+            // Profile doesn't exist - create it for OAuth users
+            const meta = session.user.user_metadata || {}
+            const fullName = meta.full_name || meta.name || ""
+            const nameParts = fullName.split(" ")
+            
+            await supabase.from("profiles").upsert({
+              id: session.user.id,
+              email: session.user.email,
+              first_name: nameParts[0] || meta.firstName || "",
+              last_name: nameParts.slice(1).join(" ") || meta.lastName || "",
+              role: meta.role || "tenant",
+              avatar_url: meta.avatar_url || meta.picture || "",
+              is_active: true,
+              is_verified: true,
+            })
+            
+            router.replace("/tenant/dashboard")
           if (profile?.role === "landlord") {
             router.push("/landlord/dashboard")
           } else if (profile?.role === "tenant") {
@@ -40,11 +67,13 @@ export default function AuthCallbackPage() {
             router.push("/tenant/dashboard")
           }
         } else {
-          router.push("/auth/login")
+          // No session, redirect to login
+          router.replace("/auth/login")
         }
       } catch (err: any) {
         console.error("Auth callback error:", err)
         setError(err.message)
+        setTimeout(() => router.replace("/auth/login"), 3000)
         setTimeout(() => router.push("/auth/login"), 3000)
       }
     }

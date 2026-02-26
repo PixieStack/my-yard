@@ -6,8 +6,7 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 ## Tech Stack
 - **Framework**: Next.js 15 (App Router) with TypeScript
 - **Database**: Supabase (PostgreSQL) with Realtime subscriptions
-- **Auth**: Supabase Auth (email/password + Google OAuth)
-- **Email**: Brevo SMTP for verification emails
+- **Auth**: Supabase Auth
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Payments**: Ozow (placeholder, awaiting API key)
 
@@ -75,6 +74,34 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 - [ ] Automated rent reminders
 - [ ] Deposit return flow
 - [ ] Property image upload
+- [ ] Advanced search filters on home page
+- [ ] Performance optimization
+
+---
+
+## Database Schema (Supabase)
+
+### Existing Tables
+profiles, properties, property_images, applications, viewing_requests, messages, leases, payments, favorites, reviews, townships
+
+### Key Fields
+- **leases.lease_terms**: JSON storing full LeaseConfig (extras, calculations, signatures, options)
+- **payments.payment_type**: 'move_in' | 'monthly_rent' | 'admin_fee' | 'cancel_penalty' | 'deposit_return'
+- **payments.transaction_reference**: Unique ref for Ozow tracking
+
+### Missing Tables
+- notifications (SQL script at `/app/scripts/create-notifications-table.sql`)
+
+---
+
+## Key Files
+- `/app/lib/lease-utils.ts` - Shared calculation logic, types, constants
+- `/app/app/landlord/leases/page.tsx` - Landlord lease creation (full flow)
+- `/app/app/tenant/leases/page.tsx` - Tenant lease view/sign/pay
+- `/app/app/api/payments/ozow/route.ts` - Ozow payment API
+- `/app/app/api/payments/notify/route.ts` - Ozow webhook
+- `/app/app/api/payments/history/route.ts` - Payment history
+- `/app/playbook_for_ozow.md` - Ozow integration guide
 
 ## Testing Status
 - Iteration 1: 11/11 passed (100%)

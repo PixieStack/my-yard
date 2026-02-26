@@ -124,14 +124,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut()
+      // Clear local state first
       setUser(null)
       setProfile(null)
-      router.push("/auth/login")
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut()
+      
+      // Clear any local storage items
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('myyard-auth-token')
+        sessionStorage.clear()
+      }
+      
+      // Use replace to prevent back button issues
+      router.replace("/auth/login")
+      
+      // Force reload to clear any cached state
+      window.location.href = "/auth/login"
     } catch (error) {
       console.error("Error signing out:", error)
       // Still redirect even if there's an error
-      router.push("/auth/login")
+      if (typeof window !== 'undefined') {
+        window.location.href = "/auth/login"
+      }
     }
   }
 
