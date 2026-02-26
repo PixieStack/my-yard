@@ -501,20 +501,56 @@ export default function AddPropertyPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="township">Township *</Label>
-                <Select value={formData.township_id} onValueChange={(value) => handleInputChange("township_id", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select township" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {townships.map((township) => (
-                      <SelectItem key={township.id} value={township.id}>
-                        {township.name}, {township.municipality}
-                      </SelectItem>
+              <div className="space-y-2 relative">
+                <Label htmlFor="location">Location *</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="location"
+                    placeholder="Search township, suburb, or city..."
+                    value={locationSearch}
+                    onChange={(e) => {
+                      setLocationSearch(e.target.value)
+                      if (selectedLocation) {
+                        setSelectedLocation(null)
+                        setFormData((prev) => ({
+                          ...prev,
+                          location_name: "",
+                          location_city: "",
+                          location_province: "",
+                        }))
+                      }
+                    }}
+                    onFocus={() => locationOptions.length > 0 && setShowLocationDropdown(true)}
+                    className="pl-10"
+                    autoComplete="off"
+                  />
+                </div>
+                {showLocationDropdown && locationOptions.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {locationOptions.map((option, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+                        onClick={() => selectLocation(option)}
+                      >
+                        <span className="font-medium">{option.township.name}</span>
+                        <span className="text-gray-500 ml-1">
+                          - {option.township.city}, {option.township.province}
+                        </span>
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {option.township.type}
+                        </Badge>
+                      </button>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
+                {selectedLocation && (
+                  <p className="text-sm text-green-600">
+                    ✓ Selected: {selectedLocation.name}, {selectedLocation.city}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
