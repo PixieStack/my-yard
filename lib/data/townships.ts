@@ -2,7 +2,7 @@
 // Used as fallback data when database is not available
 // This list contains 400+ locations across all 9 provinces
 
-export type LocationType = "township" | "suburb" | "cbd"
+export type LocationType = "township" | "suburb" | "cbd" | "informal"
 
 export interface StaticTownship {
   name: string
