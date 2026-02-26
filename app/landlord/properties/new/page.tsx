@@ -129,6 +129,20 @@ export default function AddPropertyPage() {
 
   const handleInputChange = (field: keyof PropertyFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (error) setError("")
+  }
+
+  const selectLocation = (option: LocationOption) => {
+    setSelectedLocation(option.township)
+    setLocationSearch(option.label)
+    setFormData((prev) => ({
+      ...prev,
+      location_name: option.township.name,
+      location_city: option.township.city,
+      location_province: option.township.province,
+    }))
+    setShowLocationDropdown(false)
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +154,7 @@ export default function AddPropertyPage() {
       const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB
 
       if (!isValidType) {
-        setError(`${file.name} is not a supported image format`)
+        setError(`${file.name} is not a supported image format (use JPG, PNG, GIF, or WebP)`)
         return false
       }
       if (!isValidSize) {
@@ -152,15 +166,21 @@ export default function AddPropertyPage() {
 
     const totalImages = images.length + validFiles.length
     if (totalImages > 10) {
-      setError(`You can only upload up to 10 images. You're trying to add ${totalImages} images.`)
+      setError(`Maximum 10 images allowed. You have ${images.length} and tried to add ${validFiles.length}.`)
       return
     }
 
+    // Create preview URLs and store them
+    const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file))
+    setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls])
     setImages((prev) => [...prev, ...validFiles])
-    setError("") // Clear any previous errors
+    setError("")
   }
 
   const removeImage = (index: number) => {
+    // Revoke the URL to prevent memory leak
+    URL.revokeObjectURL(imagePreviewUrls[index])
+    setImagePreviewUrls((prev) => prev.filter((_, i) => i !== index))
     setImages((prev) => prev.filter((_, i) => i !== index))
   }
 
