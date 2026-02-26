@@ -24,7 +24,7 @@ export default function HomePage() {
               <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
                 <div className="relative">
                   <Image 
-                    src="/myyard-logo.svg" 
+                    src="https://ffkvytgvdqipscackxyg.supabase.co/storage/v1/object/public/public-assets/my-yard-logo.png" 
                     alt="MyYard" 
                     width={50} 
                     height={50}
@@ -218,7 +218,12 @@ export default function HomePage() {
           <div className="container mx-auto">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-3 mb-6">
-                <Image src="/myyard-logo.svg" alt="MyYard" width={40} height={40} />
+                <Image 
+                  src="https://ffkvytgvdqipscackxyg.supabase.co/storage/v1/object/public/public-assets/my-yard-logo.png" 
+                  alt="MyYard" 
+                  width={40} 
+                  height={40} 
+                />
                 <span className="text-2xl font-black bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
                   MyYard
                 </span>
