@@ -833,7 +833,7 @@ export default function AddPropertyPage() {
                 {images.map((image, index) => (
                   <div key={index} className="relative">
                     <img
-                      src={URL.createObjectURL(image) || "/placeholder.svg"}
+                      src={imagePreviewUrls[index] || "/placeholder.svg"}
                       alt={`Property ${index + 1}`}
                       className="w-full h-24 object-cover rounded-lg"
                     />
