@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Verify hash
     const hashInput = [
       SiteCode, TransactionId, TransactionReference, Amount,
-      Status, Optional1, Optional2, OZOW_PRIVATE_KEY
+      Status, paymentType, leaseId, OZOW_PRIVATE_KEY
     ].join("").toLowerCase()
     const expectedHash = crypto.createHash("sha512").update(hashInput).digest("hex")
 
