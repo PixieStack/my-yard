@@ -665,6 +665,40 @@ export default function TenantPaymentsPage() {
         </div>
       </div>
 
+      {/* Active Lease Rent Widget */}
+      {activeLeases.filter(l => l.is_active || l.is_signed).map((lease) => {
+        const now = new Date()
+        const dueDate = new Date(now.getFullYear(), now.getMonth(), lease.rent_due_day)
+        if (dueDate < now) dueDate.setMonth(dueDate.getMonth() + 1)
+        const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+        return (
+          <Card key={lease.id} className={`border-2 ${lease.is_active ? "border-green-200 bg-green-50/30" : "border-blue-200 bg-blue-50/30"}`} data-testid={`rent-widget-${lease.id}`}>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2 flex-1">
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    {lease.is_active ? `${dueDate.toLocaleString("en-ZA", { month: "long", year: "numeric" })} Rent` : "Move-In Payment Required"}
+                  </h3>
+                  <p className="text-sm text-gray-600">{lease.property_title}</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between"><span>Rent</span><span>{fmtCurrency(lease.monthly_rent)}</span></div>
+                    {lease.extras.map((e, i) => <div key={i} className="flex justify-between"><span>{e.name}</span><span>{fmtCurrency(e.amount)}</span></div>)}
+                    {!lease.is_active && lease.deposit_amount > 0 && <div className="flex justify-between"><span>Deposit</span><span>{fmtCurrency(lease.deposit_amount)}</span></div>}
+                    <Separator className="my-1" />
+                    <div className="flex justify-between font-bold"><span>Total</span><span>{fmtCurrency(lease.is_active ? lease.monthly_total : lease.move_in_total)}</span></div>
+                  </div>
+                  {lease.is_active && <p className="text-xs text-gray-500">Due: {dueDate.toLocaleDateString("en-ZA")} | {daysUntilDue > 0 ? `${daysUntilDue} days left` : "Due today"}</p>}
+                </div>
+                <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-5" onClick={() => alert("Ozow payment integration coming soon!")} data-testid={`pay-rent-${lease.id}`}>
+                  <CreditCard className="h-4 w-4 mr-2" />Pay {fmtCurrency(lease.is_active ? lease.monthly_total : lease.move_in_total)}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
