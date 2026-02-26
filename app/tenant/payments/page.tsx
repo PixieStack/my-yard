@@ -95,12 +95,49 @@ export default function TenantPaymentsPage() {
     totalOverdue: 0,
     nextPaymentDue: null as string | null,
   })
+  const [activeLeases, setActiveLeases] = useState<ActiveLease[]>([])
 
   useEffect(() => {
     if (profile?.id) {
       fetchPayments()
+      fetchActiveLeases()
     }
   }, [profile?.id])
+
+  const fetchActiveLeases = async () => {
+    try {
+      const { data } = await supabase
+        .from("leases")
+        .select("id, monthly_rent, deposit_amount, is_active, is_signed, start_date, lease_terms, property_id")
+        .eq("tenant_id", profile?.id)
+        .order("created_at", { ascending: false })
+
+      if (data && data.length > 0) {
+        const enriched = await Promise.all(
+          data.map(async (lease) => {
+            const config = parseLeaseConfig(lease.lease_terms)
+            const { data: prop } = await supabase.from("properties").select("title").eq("id", lease.property_id).maybeSingle()
+            return {
+              id: lease.id,
+              property_title: prop?.title || "Property",
+              monthly_rent: lease.monthly_rent,
+              monthly_total: config?.monthly_total || lease.monthly_rent,
+              deposit_amount: lease.deposit_amount,
+              move_in_total: config?.move_in_total || (lease.deposit_amount + lease.monthly_rent),
+              is_active: lease.is_active,
+              is_signed: lease.is_signed,
+              start_date: lease.start_date,
+              extras: config?.extras || [],
+              rent_due_day: config?.rent_due_day || 1,
+            }
+          })
+        )
+        setActiveLeases(enriched)
+      }
+    } catch (err) {
+      console.error("Error fetching leases:", err)
+    }
+  }
 
   const fetchPayments = async () => {
     try {
