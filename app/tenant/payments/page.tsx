@@ -35,6 +35,22 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
+import { parseLeaseConfig, formatCurrency as fmtCurrency } from "@/lib/lease-utils"
+
+interface ActiveLease {
+  id: string
+  property_title: string
+  monthly_rent: number
+  monthly_total: number
+  deposit_amount: number
+  move_in_total: number
+  is_active: boolean
+  is_signed: boolean
+  start_date: string
+  extras: { name: string; amount: number }[]
+  rent_due_day: number
+}
+
 
 interface Payment {
   id: string
