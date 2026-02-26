@@ -84,3 +84,4 @@ next-env.d.ts-e
 # Environment files
 *.env
 *.env.*
+.env.local
