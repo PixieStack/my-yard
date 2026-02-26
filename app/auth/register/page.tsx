@@ -116,42 +116,6 @@ export default function RegisterPage() {
     }
   }
 
-  const handleGoogleSignup = async () => {
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      })
-      if (oauthError) {
-        setError(oauthError.message)
-      }
-    } catch (err: any) {
-      setError(err.message || "Google sign-up failed")
-    }
-  }
-
-  const handleAppleSignup = async () => {
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "apple",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-      if (oauthError) {
-        setError(oauthError.message)
-      }
-    } catch (err: any) {
-      setError(err.message || "Apple sign-up failed")
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
       {/* Background Shapes */}
