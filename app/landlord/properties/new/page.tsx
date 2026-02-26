@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,15 +13,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Upload, X, Plus, Loader2, ArrowLeft } from "lucide-react"
+import { Upload, X, Plus, Loader2, ArrowLeft, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
+import { SOUTH_AFRICAN_TOWNSHIPS, searchTownships, type StaticTownship } from "@/lib/data/townships"
 
-interface Township {
-  id: string
-  name: string
-  municipality: string
+// Use static townships as the source of truth
+interface LocationOption {
+  value: string // JSON encoded: {name, city, province}
+  label: string
+  township: StaticTownship
 }
 
 interface PropertyFormData {
