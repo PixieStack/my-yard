@@ -63,6 +63,30 @@ export default function MessagesPage() {
   useEffect(() => {
     if (profile?.id) {
       fetchConversations()
+
+      // Real-time subscription for new messages
+      const channel = supabase
+        .channel("landlord-messages")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `recipient_id=eq.${profile.id}`,
+          },
+          () => {
+            fetchConversations()
+            if (selectedConversation) {
+              fetchMessages(selectedConversation)
+            }
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
   }, [profile?.id])
 
