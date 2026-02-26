@@ -50,6 +50,21 @@ export default function AuthCallbackPage() {
             })
             
             router.replace("/tenant/dashboard")
+          if (profile?.role === "landlord") {
+            router.push("/landlord/dashboard")
+          } else if (profile?.role === "tenant") {
+            router.push("/tenant/dashboard")
+          } else {
+            const meta = session.user.user_metadata || {}
+            await supabase.from("profiles").upsert({
+              id: session.user.id,
+              email: session.user.email,
+              first_name: meta.full_name?.split(" ")[0] || meta.firstName || "",
+              last_name: meta.full_name?.split(" ").slice(1).join(" ") || meta.lastName || "",
+              role: meta.role || "tenant",
+              avatar_url: meta.avatar_url || meta.picture || "",
+            })
+            router.push("/tenant/dashboard")
           }
         } else {
           // No session, redirect to login
@@ -59,6 +74,7 @@ export default function AuthCallbackPage() {
         console.error("Auth callback error:", err)
         setError(err.message)
         setTimeout(() => router.replace("/auth/login"), 3000)
+        setTimeout(() => router.push("/auth/login"), 3000)
       }
     }
 
