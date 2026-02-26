@@ -9,12 +9,13 @@ import { useAuth } from "@/lib/auth"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, Search, FileText, CreditCard, MessageSquare, Heart, Settings, LogOut } from "lucide-react"
+import { Home, Search, FileText, CreditCard, MessageSquare, Heart, Settings, LogOut, ScrollText } from "lucide-react"
 
 const navigation = [
   { name: "Dashboard", href: "/tenant/dashboard", icon: Home },
   { name: "Browse Properties", href: "/tenant/properties", icon: Search },
   { name: "My Applications", href: "/tenant/applications", icon: FileText },
+  { name: "My Leases", href: "/tenant/leases", icon: ScrollText },
   { name: "Payments", href: "/tenant/payments", icon: CreditCard },
   { name: "Messages", href: "/tenant/messages", icon: MessageSquare },
   { name: "Favorites", href: "/tenant/favorites", icon: Heart },
