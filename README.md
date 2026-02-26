@@ -196,8 +196,29 @@ Open: **http://localhost:3000**
 - [ ] Configure Google OAuth in Supabase dashboard
 - [ ] Automated rent reminders
 - [ ] Deposit return flow
-- [ ] Property image upload
 - [ ] Advanced search filters
+
+---
+
+## Recent Fixes (v2.0)
+
+### Add Property Page Improvements
+- ✅ Fixed TypeScript error in townships.ts (added "informal" location type)
+- ✅ Replaced database-dependent township dropdown with static data search
+- ✅ Fixed memory leak from URL.createObjectURL (proper cleanup in useEffect)
+- ✅ Added client-side date validation (no past dates for availability)
+- ✅ Added cross-field validation (min lease ≤ preferred lease)
+- ✅ Specific error messages for form validation
+- ✅ Server-side validation in new `/api/properties` endpoint
+
+### Database Migration
+- ✅ New location columns: `location_name`, `location_city`, `location_province`
+- ✅ Migration script: `/scripts/add-location-columns-migration.sql`
+- ✅ Updated RLS policies for property creation
+
+### Image Storage
+- ✅ Supabase Storage integration for property images (with Base64 fallback)
+- ✅ Storage bucket setup script: `/scripts/setup-storage-bucket.sql`
 
 ---
 
