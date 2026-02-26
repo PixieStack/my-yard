@@ -64,6 +64,17 @@ export default function RegisterPage() {
 
       if (signUpError) throw signUpError
 
+      // Send custom verification email via Brevo SMTP
+      try {
+        await fetch("/api/auth/send-verification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name: firstName }),
+        })
+      } catch (emailErr) {
+        console.error("Verification email error:", emailErr)
+      }
+
       setSuccess(true)
       setTimeout(() => {
         router.push('/auth/login?registered=true')
