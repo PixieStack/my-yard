@@ -347,7 +347,7 @@ export const SOUTH_AFRICAN_TOWNSHIPS: StaticTownship[
   { name: "Upington CBD", city: "Upington", province: "Northern Cape", type: "cbd" },
   { name: "Paballelo", city: "Upington", province: "Northern Cape", type: "township" },
   { name: "Springbok CBD", city: "Springbok", province: "Northern Cape", type: "cbd" },
-  { name: "De Aar CBD", city: "De Aar", province: "Northern Cape", type: "cbd" }
+  { name: "De Aar CBD", city: "De Aar", province: "Northern Cape", type: "cbd" },
   // Eastern Cape (additional)
   { name: "Dukathole", city: "Aliwal North", province: "Eastern Cape", type: "township" },
   { name: "Bisho", city: "Bisho", province: "Eastern Cape", type: "cbd" },
