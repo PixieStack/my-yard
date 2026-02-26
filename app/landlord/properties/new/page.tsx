@@ -80,7 +80,9 @@ export default function AddPropertyPage() {
     bathrooms: "1",
     square_meters: "",
     address: "",
-    township_id: "",
+    location_name: "",
+    location_city: "",
+    location_province: "",
     is_furnished: false,
     pets_allowed: false,
     smoking_allowed: false,
@@ -95,18 +97,35 @@ export default function AddPropertyPage() {
     minimum_lease_months: "6",
   })
 
+  // Cleanup image preview URLs on unmount to prevent memory leaks
   useEffect(() => {
-    fetchTownships()
-  }, [])
-
-  const fetchTownships = async () => {
-    try {
-      const { data } = await supabase.from("townships").select("id, name, municipality").order("name")
-      setTownships(data || [])
-    } catch (error) {
-      console.error("Error fetching townships:", error)
+    return () => {
+      imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
     }
-  }
+  }, [imagePreviewUrls])
+
+  // Debounced location search
+  useEffect(() => {
+    if (locationSearch.length < 2) {
+      setLocationOptions([])
+      return
+    }
+    
+    const results = searchTownships(locationSearch).slice(0, 20)
+    const options: LocationOption[] = results.map((t) => ({
+      value: JSON.stringify({ name: t.name, city: t.city, province: t.province }),
+      label: `${t.name}, ${t.city}, ${t.province}`,
+      township: t,
+    }))
+    setLocationOptions(options)
+    setShowLocationDropdown(options.length > 0)
+  }, [locationSearch])
+
+  // Get today's date for min date validation
+  const today = useMemo(() => {
+    const date = new Date()
+    return date.toISOString().split("T")[0]
+  }, [])
 
   const handleInputChange = (field: keyof PropertyFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
