@@ -65,12 +65,20 @@ export function NotificationBell() {
         .order("created_at", { ascending: false })
         .limit(20)
 
-      if (error) throw error
+      if (error) {
+        // Table might not exist yet - gracefully handle
+        console.log("Notifications not available:", error.message)
+        setNotifications([])
+        setUnreadCount(0)
+        return
+      }
 
       setNotifications(data || [])
       setUnreadCount(data?.filter((n) => !n.is_read).length || 0)
     } catch (error) {
       console.error("Error fetching notifications:", error)
+      setNotifications([])
+      setUnreadCount(0)
     } finally {
       setLoading(false)
     }
