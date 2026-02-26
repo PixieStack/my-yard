@@ -20,7 +20,7 @@
     "integration_issues": [
       {
         "flow": "External URL API access",
-        "issue": "External URL (https://myard-phase1.preview.emergentagent.com) returns intermittent 502 errors on API routes - likely preview environment infrastructure issue. Localhost works perfectly.",
+        "issue": "External URL (https://smtp-settings-1.preview.emergentagent.com) returns intermittent 502 errors on API routes - likely preview environment infrastructure issue. Localhost works perfectly.",
         "affected_selectors": []
       }
     ],

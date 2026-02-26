@@ -90,6 +90,6 @@ MyYard is South Africa's #1 township rental platform connecting landlords and te
 - `/app/app/tenant/leases/page.tsx` - Tenant lease view/sign/pay
 
 ## Environment
-- App URL: https://myard-phase1.preview.emergentagent.com
+- App URL: https://smtp-settings-1.preview.emergentagent.com
 - Supabase: https://ffkvytgvdqipscackxyg.supabase.co
 - SMTP: Brevo (smtp-relay.brevo.com:587)
