@@ -10,11 +10,9 @@ export const isSupabaseConfigured =
 export function createClient() {
   const cookieStore = cookies()
 
-  // Use environment variables with fallbacks
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://bhiomaipnpdsthzpkped.supabase.co"
-  const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoaW9tYWlwbnBkc3RoenBrcGVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5NDQzNDQsImV4cCI6MjA3MDUyMDM0NH0.KXQgw1ek_PE_HVpoEqqIsWnjPyFK45WE5-rENFe0V18"
+  // Use environment variables (no hardcoded fallbacks)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
