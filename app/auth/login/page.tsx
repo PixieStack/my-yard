@@ -71,16 +71,52 @@ function LoginContent() {
       // profile fetch here, which would race with AuthProvider's onAuthStateChange.
       const role = data.user.user_metadata?.role
 
-      // Redirect based on role
+      // Redirect based on role (use replace to prevent back button issues)
       if (role === 'landlord') {
-        router.push('/landlord/dashboard')
+        router.replace('/landlord/dashboard')
       } else {
-        router.push('/tenant/dashboard')
+        router.replace('/tenant/dashboard')
       }
     } catch (err: any) {
       setError(err.message || "Login failed")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+      if (oauthError) {
+        setError(oauthError.message)
+      }
+    } catch (err: any) {
+      setError(err.message || "Google sign-in failed")
+    }
+  }
+
+  const handleAppleLogin = async () => {
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "apple",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (oauthError) {
+        setError(oauthError.message)
+      }
+    } catch (err: any) {
+      setError(err.message || "Apple sign-in failed")
     }
   }
 
