@@ -64,7 +64,12 @@ function VerifyEmailContent() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Link href="/" className="flex items-center justify-center mb-8">
-          <Image src="/myyard-logo.svg" alt="MyYard" width={50} height={50} />
+          <Image 
+            src="https://ffkvytgvdqipscackxyg.supabase.co/storage/v1/object/public/public-assets/my-yard-logo.png" 
+            alt="MyYard" 
+            width={50} 
+            height={50} 
+          />
           <span className="ml-3 text-3xl font-black bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent">
             MyYard
           </span>
