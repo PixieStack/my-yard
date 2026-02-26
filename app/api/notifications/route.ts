@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase-server"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ notifications: [], unread_count: 0 })
     }
 
     const { data, error } = await supabase
@@ -21,7 +20,6 @@ export async function GET(request: NextRequest) {
       .limit(20)
 
     if (error) {
-      // Table might not exist yet - return empty
       return NextResponse.json({ notifications: [], unread_count: 0 })
     }
 
