@@ -121,10 +121,11 @@ export default function AddPropertyPage() {
     setShowLocationDropdown(options.length > 0)
   }, [locationSearch])
 
-  // Get today's date for min date validation
-  const today = useMemo(() => {
+  // Get today's date for min date validation - set on client side only
+  const [today, setToday] = useState("")
+  useEffect(() => {
     const date = new Date()
-    return date.toISOString().split("T")[0]
+    setToday(date.toISOString().split("T")[0])
   }, [])
 
   const handleInputChange = (field: keyof PropertyFormData, value: string | boolean) => {
