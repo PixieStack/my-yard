@@ -11,7 +11,8 @@ export interface StaticTownship {
   type: LocationType
 }
 
-export const SOUTH_AFRICAN_TOWNSHIPS: StaticTownship[] = [
+export const SOUTH_AFRICAN_TOWNSHIPS: StaticTownship[
+] = [
   // GAUTENG - Johannesburg CBD & Inner City
   { name: "Johannesburg CBD", city: "Johannesburg", province: "Gauteng", type: "cbd" },
   { name: "Braamfontein", city: "Johannesburg", province: "Gauteng", type: "suburb" },
@@ -346,18 +347,7 @@ export const SOUTH_AFRICAN_TOWNSHIPS: StaticTownship[] = [
   { name: "Upington CBD", city: "Upington", province: "Northern Cape", type: "cbd" },
   { name: "Paballelo", city: "Upington", province: "Northern Cape", type: "township" },
   { name: "Springbok CBD", city: "Springbok", province: "Northern Cape", type: "cbd" },
-  { name: "De Aar CBD", city: "De Aar", province: "Northern Cape", type: "cbd" },
-]
-
-// Helper function to get townships grouped by province
-export function getTownshipsByProvince(): Record<string, StaticTownship[]> {
-  return SOUTH_AFRICAN_TOWNSHIPS.reduce((acc, township) => {
-    if (!acc[township.province]) {
-      acc[township.province] = []
-    }
-    acc[township.province].push(township)
-    return acc
-  }, {} as Record<string, StaticTownship[
+  { name: "De Aar CBD", city: "De Aar", province: "Northern Cape", type: "cbd" }
   // Eastern Cape (additional)
   { name: "Dukathole", city: "Aliwal North", province: "Eastern Cape", type: "township" },
   { name: "Bisho", city: "Bisho", province: "Eastern Cape", type: "cbd" },
@@ -933,7 +923,17 @@ export function getTownshipsByProvince(): Record<string, StaticTownship[]> {
   { name: "Avian Park", city: "Worcester", province: "Western Cape", type: "township" },
   { name: "Riverview", city: "Worcester", province: "Western Cape", type: "township" },
   { name: "Zwelethemba", city: "Worcester", province: "Western Cape", type: "township" },
-]>)
+]
+
+// Helper function to get townships grouped by province
+export function getTownshipsByProvince(): Record<string, StaticTownship[]> {
+  return SOUTH_AFRICAN_TOWNSHIPS.reduce((acc, township) => {
+    if (!acc[township.province]) {
+      acc[township.province] = []
+    }
+    acc[township.province].push(township)
+    return acc
+  }, {} as Record<string, StaticTownship[]>)
 }
 
 // Helper function to search townships
