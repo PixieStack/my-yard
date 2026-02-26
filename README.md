@@ -52,12 +52,12 @@ NEXT_PUBLIC_OZOW_ENABLED=false
 
 ### 3. Setup Database
 
-Run the SQL scripts in your Supabase SQL editor in this order:
+Run these SQL scripts in your **Supabase SQL Editor** in this order:
 
-1. `/scripts/setup-database.sql` - Creates all tables and RLS policies
-2. `/scripts/add-location-columns-migration.sql` - Adds new location columns to properties table
-3. `/scripts/setup-storage-bucket.sql` - Creates storage bucket for property images
-4. `/scripts/import-all-townships.sql` - Imports 873 South African locations (optional - static data is included)
+1. **`/scripts/setup-database.sql`** - Creates all base tables and RLS policies
+2. **`/scripts/complete-properties-migration.sql`** - **IMPORTANT: Adds all required columns to properties table** (run this to fix "column not found" errors)
+3. **`/scripts/setup-storage-bucket.sql`** - Creates storage bucket for property images
+4. `/scripts/import-all-townships.sql` - Imports 873 South African locations (optional - static data is included in code)
 
 ### 4. Start Development Server
 
