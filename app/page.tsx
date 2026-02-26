@@ -24,7 +24,7 @@ export default function HomePage() {
               <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
                 <div className="relative">
                   <Image 
-                    src="/myyard-logo.svg" 
+                    src="https://ffkvytgvdqipscackxyg.supabase.co/storage/v1/object/public/public-assets/my-yard-logo.png" 
                     alt="MyYard" 
                     width={50} 
                     height={50}
