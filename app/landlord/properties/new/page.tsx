@@ -200,19 +200,47 @@ export default function AddPropertyPage() {
 
     try {
       const uploadPromises = images.map(async (image, index) => {
-        console.log(`Processing image ${index + 1}/${images.length}: ${image.name}`)
+        console.log(`Uploading image ${index + 1}/${images.length}: ${image.name}`)
 
-        // Convert image to base64
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(image)
-        })
+        // Generate unique filename
+        const fileExt = image.name.split(".").pop()
+        const fileName = `${propertyId}/${Date.now()}-${index}.${fileExt}`
+
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("property-images")
+          .upload(fileName, image, {
+            cacheControl: "3600",
+            upsert: false,
+          })
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError)
+          // Fallback to base64 if storage bucket doesn't exist
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(image)
+          })
+          return {
+            property_id: propertyId,
+            image_url: base64,
+            is_primary: index === 0,
+            display_order: index,
+            caption: `Property image ${index + 1}`,
+            image_type: "property",
+          }
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from("property-images")
+          .getPublicUrl(fileName)
 
         return {
           property_id: propertyId,
-          image_url: base64,
+          image_url: publicUrl,
           is_primary: index === 0,
           display_order: index,
           caption: `Property image ${index + 1}`,
@@ -236,6 +264,44 @@ export default function AddPropertyPage() {
       console.error("Image processing error:", error)
       throw error
     }
+  }
+
+  // Validate form before submission
+  const validateForm = (): string | null => {
+    if (!formData.title.trim()) {
+      return "Property title is required"
+    }
+    if (!formData.property_type) {
+      return "Please select a property type"
+    }
+    if (!formData.rent_amount || parseFloat(formData.rent_amount) <= 0) {
+      return "Please enter a valid monthly rent amount"
+    }
+    if (!formData.address.trim()) {
+      return "Street address is required"
+    }
+    if (!formData.location_name) {
+      return "Please select a location from the dropdown"
+    }
+    
+    // Validate available_from is not in the past
+    if (formData.available_from) {
+      const availableDate = new Date(formData.available_from)
+      const todayDate = new Date()
+      todayDate.setHours(0, 0, 0, 0)
+      if (availableDate < todayDate) {
+        return "Available from date cannot be in the past"
+      }
+    }
+    
+    // Cross-field validation: minimum lease should not exceed preferred lease
+    const minLease = parseInt(formData.minimum_lease_months)
+    const prefLease = parseInt(formData.lease_duration_months)
+    if (minLease > prefLease) {
+      return "Minimum lease duration cannot exceed preferred lease duration"
+    }
+    
+    return null
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
