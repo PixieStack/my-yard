@@ -7,8 +7,9 @@ notifications, properties by township, payment webhook, auth pages
 import pytest
 import requests
 
-# External URL for testing (what users see)
-BASE_URL = "https://myard-phase1.preview.emergentagent.com"
+# Use localhost for API testing (external URL has intermittent 502 issues in preview environment)
+BASE_URL = "http://localhost:3000"
+EXTERNAL_URL = "https://myard-phase1.preview.emergentagent.com"
 
 class TestTownshipsAPI:
     """Townships API endpoint tests - 873 SA townships"""
