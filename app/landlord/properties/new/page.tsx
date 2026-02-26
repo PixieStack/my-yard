@@ -754,6 +754,7 @@ export default function AddPropertyPage() {
                 <Input
                   id="available_from"
                   type="date"
+                  min={today}
                   value={formData.available_from}
                   onChange={(e) => handleInputChange("available_from", e.target.value)}
                 />
