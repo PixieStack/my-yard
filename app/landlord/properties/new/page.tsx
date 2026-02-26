@@ -17,7 +17,7 @@ import { Upload, X, Plus, Loader2, ArrowLeft, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
-import { SOUTH_AFRICAN_TOWNSHIPS, searchTownships, type StaticTownship } from "@/lib/data/townships"
+import { searchTownships, type StaticTownship } from "@/lib/data/townships"
 
 // Use static townships as the source of truth
 interface LocationOption {
