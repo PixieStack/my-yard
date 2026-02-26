@@ -349,6 +349,8 @@ export default function TenantMessagesPage() {
           title: "Tenant Willing to Proceed Without Viewing",
           message: `${profile.first_name} ${profile.last_name} declined the viewing but is willing to take the apartment without viewing it.`,
           action_url: `/landlord/applications`,
+        }).then(({ error }) => {
+          if (error) console.log("Notification insert skipped:", error.message)
         })
       } else {
         const reason = declineReason === "other" ? customReason : declineReason
