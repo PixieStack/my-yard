@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth"
 
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user, profile, loading: authLoading } = useAuth()
   const registered = searchParams.get('registered')
   const verified = searchParams.get('verified')
   
@@ -23,6 +25,34 @@ function LoginContent() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user && profile) {
+      if (profile.role === 'landlord') {
+        router.replace('/landlord/dashboard')
+      } else {
+        router.replace('/tenant/dashboard')
+      }
+    }
+  }, [user, profile, authLoading, router])
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-600" />
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render login form if user is already logged in
+  if (user) {
+    return null
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
