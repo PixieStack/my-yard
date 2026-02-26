@@ -311,20 +311,17 @@ export default function AddPropertyPage() {
     setSuccess("")
 
     try {
-      // Validate required fields
-      if (
-        !formData.title ||
-        !formData.property_type ||
-        !formData.rent_amount ||
-        !formData.address ||
-        !formData.township_id
-      ) {
-        setError("Please fill in all required fields")
+      // Validate form
+      const validationError = validateForm()
+      if (validationError) {
+        setError(validationError)
+        setLoading(false)
         return
       }
 
       if (!profile?.id) {
         setError("You must be logged in to create a property")
+        setLoading(false)
         return
       }
 
@@ -332,7 +329,6 @@ export default function AddPropertyPage() {
 
       const propertyData = {
         landlord_id: profile.id,
-        township_id: formData.township_id,
         title: formData.title.trim(),
         description: formData.description.trim(),
         property_type: formData.property_type,
@@ -342,6 +338,10 @@ export default function AddPropertyPage() {
         bathrooms: Number.parseInt(formData.bathrooms),
         square_meters: formData.square_meters ? Number.parseInt(formData.square_meters) : null,
         address: formData.address.trim(),
+        // New location fields
+        location_name: formData.location_name,
+        location_city: formData.location_city,
+        location_province: formData.location_province,
         is_furnished: formData.is_furnished,
         pets_allowed: formData.pets_allowed,
         smoking_allowed: formData.smoking_allowed,
@@ -369,6 +369,7 @@ export default function AddPropertyPage() {
       if (propertyError) {
         console.error("Property creation error:", propertyError)
         setError(`Failed to create property: ${propertyError.message}`)
+        setLoading(false)
         return
       }
 
