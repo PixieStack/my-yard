@@ -78,12 +78,20 @@ export default function LoginPage() {
           </CardHeader>
           
           <CardContent>
-            {/* Success Message */}
+            {/* Success Messages */}
             {registered && (
               <Alert className="mb-4 border-green-200 bg-green-50">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
                   Registration successful! Please check your email to verify your account, then login.
+                </AlertDescription>
+              </Alert>
+            )}
+            {verified && (
+              <Alert className="mb-4 border-green-200 bg-green-50">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  Email verified! You can now sign in to your account.
                 </AlertDescription>
               </Alert>
             )}
