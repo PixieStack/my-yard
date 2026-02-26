@@ -107,12 +107,48 @@ export default function RegisterPage() {
 
       setSuccess(true)
       setTimeout(() => {
-        router.push('/auth/login?registered=true')
+        router.replace('/auth/login?registered=true')
       }, 2000)
     } catch (err: any) {
       setError(err.message || "Registration failed")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSignup = async () => {
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+      if (oauthError) {
+        setError(oauthError.message)
+      }
+    } catch (err: any) {
+      setError(err.message || "Google sign-up failed")
+    }
+  }
+
+  const handleAppleSignup = async () => {
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "apple",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (oauthError) {
+        setError(oauthError.message)
+      }
+    } catch (err: any) {
+      setError(err.message || "Apple sign-up failed")
     }
   }
 
