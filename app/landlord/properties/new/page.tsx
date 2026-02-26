@@ -36,7 +36,9 @@ interface PropertyFormData {
   bathrooms: string
   square_meters: string
   address: string
-  township_id: string
+  location_name: string
+  location_city: string
+  location_province: string
   is_furnished: boolean
   pets_allowed: boolean
   smoking_allowed: boolean
@@ -54,13 +56,19 @@ interface PropertyFormData {
 export default function AddPropertyPage() {
   const { profile } = useAuth()
   const router = useRouter()
-  const [townships, setTownships] = useState<Township[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [images, setImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [amenities, setAmenities] = useState<string[]>([])
   const [newAmenity, setNewAmenity] = useState("")
+  
+  // Location search state
+  const [locationSearch, setLocationSearch] = useState("")
+  const [locationOptions, setLocationOptions] = useState<LocationOption[]>([])
+  const [selectedLocation, setSelectedLocation] = useState<StaticTownship | null>(null)
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
 
   const [formData, setFormData] = useState<PropertyFormData>({
     title: "",
