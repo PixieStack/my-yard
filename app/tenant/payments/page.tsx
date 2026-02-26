@@ -310,13 +310,23 @@ export default function TenantPaymentsPage() {
           <h2 className="text-2xl font-bold text-gray-900">My Payments</h2>
           <p className="text-gray-600">Track your rental payments and submit payment proof</p>
         </div>
-        <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Submit Payment
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            onClick={() => alert("Ozow integration coming soon! The landlord will be notified when the integration is active.")}
+            data-testid="pay-with-ozow-btn"
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            Pay Online (Ozow)
+          </Button>
+          <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" data-testid="submit-payment-btn">
+                <Plus className="mr-2 h-4 w-4" />
+                Submit Payment
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="space-y-3">
               <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
