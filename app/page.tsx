@@ -74,7 +74,7 @@ export default function HomePage() {
               </h1>
               
               <p className="text-xl md:text-2xl text-slate-600 mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
-                Connect landlords and tenants across Soweto, Sandton, Khayelitsha and 150+ locations. 
+                Connect landlords and tenants across Soweto, Sandton, Khayelitsha and 870+ locations. 
                 <span className="text-orange-600 font-bold"> Fast. Safe. Simple.</span>
               </p>
 
@@ -155,7 +155,7 @@ export default function HomePage() {
                 },
                 {
                   icon: MapPin,
-                  title: "150+ Locations",
+                  title: "870+ Locations",
                   description: "Find homes across all major townships, suburbs, and CBDs in South Africa",
                   features: ["Smart search", "Township-specific", "GPS integrated"],
                   gradient: "from-amber-500 to-yellow-500"
