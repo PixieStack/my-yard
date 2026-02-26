@@ -127,6 +127,11 @@ Open: **http://localhost:3000**
 
 ## API Endpoints
 
+### Properties
+- `GET /api/properties` - Get landlord's properties
+- `POST /api/properties` - Create new property (with server-side validation)
+- `GET /api/properties/by-township` - Search properties by location
+
 ### Townships
 - `GET /api/townships` - Search townships with autocomplete
 - `GET /api/properties/by-township` - Properties in a township
