@@ -52,7 +52,7 @@ interface PropertyFormData {
 }
 
 export default function AddPropertyPage() {
-  const { profile, user } = useAuth()
+  const { profile } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -62,7 +62,7 @@ export default function AddPropertyPage() {
   const [amenities, setAmenities] = useState<string[]>([])
   const [newAmenity, setNewAmenity] = useState("")
   const [today, setToday] = useState("")
-  const [debugInfo, setDebugInfo] = useState<string[]>([])
+  const [debugInfo, setDebugInfo] = useState<string[]>([]) // ← shows debug steps on screen too
 
   // Location search state
   const [locationSearch, setLocationSearch] = useState("")
@@ -101,38 +101,26 @@ export default function AddPropertyPage() {
 
   const log = (msg: string, data?: any) => {
     const timestamp = new Date().toISOString().split("T")[1].split(".")[0]
-    const line = `[${timestamp}] ${msg}`
+    const line = data !== undefined ? `[${timestamp}] ${msg}` : `[${timestamp}] ${msg}`
     console.log(`🔍 ${line}`, data !== undefined ? data : "")
-    setDebugInfo((prev) => [
-      ...prev,
-      `${line}${data !== undefined ? ` → ${JSON.stringify(data)}` : ""}`,
-    ])
+    setDebugInfo((prev) => [...prev, `${line}${data !== undefined ? ` → ${JSON.stringify(data)}` : ""}`])
   }
 
   const logError = (msg: string, err?: any) => {
-    // ✅ Fully expanded error logging
-    const expanded = err
-      ? {
-          message: err?.message ?? "no message",
-          code: err?.code ?? "no code",
-          details: err?.details ?? "no details",
-          hint: err?.hint ?? "no hint",
-          status: err?.status ?? "no status",
-          raw: JSON.stringify(err),
-        }
-      : "no error object"
-
-    console.error(`❌ ${msg}`, expanded)
-    setDebugInfo((prev) => [
-      ...prev,
-      `❌ ${msg} → ${JSON.stringify(expanded)}`,
-    ])
+    console.error(`❌ ${msg}`, err)
+    const detail = err
+      ? typeof err === "object"
+        ? JSON.stringify(err, null, 2)
+        : String(err)
+      : ""
+    setDebugInfo((prev) => [...prev, `❌ ${msg} ${detail}`])
   }
 
   // ─── Effects ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    setToday(new Date().toISOString().split("T")[0])
+    const date = new Date()
+    setToday(date.toISOString().split("T")[0])
   }, [])
 
   useEffect(() => {
@@ -223,8 +211,7 @@ export default function AddPropertyPage() {
     if (!formData.location_name) return "Please select a location from the dropdown"
     if (formData.available_from) {
       const avail = new Date(formData.available_from)
-      const now = new Date()
-      now.setHours(0, 0, 0, 0)
+      const now = new Date(); now.setHours(0, 0, 0, 0)
       if (avail < now) return "Available from date cannot be in the past"
     }
     if (parseInt(formData.minimum_lease_months) > parseInt(formData.lease_duration_months))
@@ -235,69 +222,61 @@ export default function AddPropertyPage() {
   // ─── Upload Images ─────────────────────────────────────────────────────────
 
   const uploadImages = async (propertyId: string) => {
-    log(`Uploading ${images.length} image(s) for property ${propertyId}`)
+    log(`Uploading ${images.length} image(s) for property`, propertyId)
 
-    // ✅ First check what columns property_images actually has
     const uploadPromises = images.map(async (image, index) => {
       const fileExt = image.name.split(".").pop()
       const fileName = `${propertyId}/${Date.now()}-${index}.${fileExt}`
+      log(`Uploading image ${index + 1}: ${image.name} → ${fileName}`)
 
-      log(`Processing image ${index + 1}: ${image.name}`)
-
-      // Try storage upload first
       const { error: uploadError } = await supabase.storage
         .from("property-images")
         .upload(fileName, image, { cacheControl: "3600", upsert: false })
 
-      let imageUrl: string
-
       if (uploadError) {
-        logError(`Storage upload failed for image ${index + 1} — using base64 fallback`, uploadError)
+        logError(`Storage upload failed for image ${index + 1}`, uploadError)
         // Fallback to base64
-        imageUrl = await new Promise<string>((resolve, reject) => {
+        const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
           reader.onload = () => resolve(reader.result as string)
           reader.onerror = reject
           reader.readAsDataURL(image)
         })
-        log(`Image ${index + 1} converted to base64 fallback`)
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from("property-images")
-          .getPublicUrl(fileName)
-        imageUrl = publicUrl
-        log(`Image ${index + 1} uploaded to storage`, publicUrl)
+        return {
+          property_id: propertyId,
+          image_url: base64,
+          is_primary: index === 0,
+          display_order: index,
+          caption: `Property image ${index + 1}`,
+          image_type: "property",
+        }
       }
 
-      // ✅ Only send columns we KNOW exist from your schema check
+      const { data: { publicUrl } } = supabase.storage
+        .from("property-images")
+        .getPublicUrl(fileName)
+
+      log(`Image ${index + 1} public URL`, publicUrl)
+
       return {
         property_id: propertyId,
-        image_url: imageUrl,
+        image_url: publicUrl,
         is_primary: index === 0,
         display_order: index,
+        caption: `Property image ${index + 1}`,
+        image_type: "property",
       }
     })
 
     const imageData = await Promise.all(uploadPromises)
-    log("All images processed, inserting into property_images...", imageData.length)
-    log("Image data being inserted:", imageData)
+    log("All images processed, saving to property_images table", imageData.length)
 
-    const { data: insertedImages, error: dbError } = await supabase
-      .from("property_images")
-      .insert(imageData)
-      .select()
-
+    const { error: dbError } = await supabase.from("property_images").insert(imageData)
     if (dbError) {
-      logError("property_images INSERT failed", {
-        message: dbError.message,
-        code: dbError.code,
-        details: dbError.details,
-        hint: dbError.hint,
-      })
-      throw new Error(`Image DB save failed: ${dbError.message} (code: ${dbError.code})`)
+      logError("property_images insert failed", dbError)
+      throw new Error(`Image DB save failed: ${dbError.message}`)
     }
-
-    log(`✅ ${insertedImages?.length ?? 0} image records saved to DB`)
+    log("✅ Images saved to DB")
   }
 
   // ─── Submit ────────────────────────────────────────────────────────────────
@@ -307,10 +286,10 @@ export default function AddPropertyPage() {
     setLoading(true)
     setError("")
     setSuccess("")
-    setDebugInfo([])
+    setDebugInfo([]) // clear debug panel
 
     try {
-      // ── Step 1: Validate ──
+      // ── Step 1: Validate form ──
       log("STEP 1: Validating form...")
       const validationError = validateForm()
       if (validationError) {
@@ -319,33 +298,65 @@ export default function AddPropertyPage() {
         setLoading(false)
         return
       }
-      log("Validation passed ✅")
+      log("Form validation passed ✅")
 
       // ── Step 2: Check profile ──
-      log("STEP 2: Checking profile...")
-      log("profile.id", profile?.id)
-      log("profile.role", profile?.role)
-      log("supabase user.id", user?.id)
+      log("STEP 2: Checking auth profile...")
+      log("profile object", profile)
 
-      if (!profile?.id) {
-        logError("No profile ID found")
-        setError("Your account is not loaded. Please sign out and sign back in.")
+      if (!profile) {
+        logError("profile is null/undefined — user not loaded yet")
+        setError("Your profile is still loading. Please wait a moment and try again.")
         setLoading(false)
         return
       }
 
-      // ✅ Warn if profile.id doesn't match supabase user.id
-      if (user?.id && profile.id !== user.id) {
-        logError("⚠️ profile.id does not match supabase user.id!", {
-          profileId: profile.id,
-          userId: user.id,
-        })
+      if (!profile.id) {
+        logError("profile.id is missing", profile)
+        setError("Cannot identify your account. Please sign out and sign back in.")
+        setLoading(false)
+        return
       }
 
-      log("Profile ID ✅", profile.id)
+      log("Profile ID confirmed", profile.id)
+      log("Profile role", profile.role)
 
-      // ── Step 3: Build payload ──
-      log("STEP 3: Building property payload...")
+      // ── Step 3: Check live Supabase session ──
+      log("STEP 3: Checking Supabase auth session...")
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError) {
+        logError("Session fetch error", sessionError)
+        setError("Session error. Please sign out and sign back in.")
+        setLoading(false)
+        return
+      }
+
+      if (!sessionData.session) {
+        logError("No active Supabase session found", sessionData)
+        setError("Your session has expired. Please sign out and sign back in.")
+        setLoading(false)
+        return
+      }
+
+      log("Session user ID", sessionData.session.user.id)
+      log("Session expires at", sessionData.session.expires_at)
+
+      // Warn if profile.id doesn't match session user id
+      if (profile.id !== sessionData.session.user.id) {
+        logError("MISMATCH: profile.id does not match session user.id!", {
+          profileId: profile.id,
+          sessionUserId: sessionData.session.user.id,
+        })
+        setError("Account ID mismatch. Please sign out and sign back in.")
+        setLoading(false)
+        return
+      }
+
+      log("profile.id matches session user.id ✅")
+
+      // ── Step 4: Build payload ──
+      log("STEP 4: Building property payload...")
 
       const propertyData = {
         landlord_id: profile.id,
@@ -358,14 +369,9 @@ export default function AddPropertyPage() {
         bathrooms: parseInt(formData.bathrooms),
         square_meters: formData.square_meters ? parseInt(formData.square_meters) : null,
         address: formData.address.trim(),
-        // ✅ Legacy columns
-        city: formData.location_city || null,
-        province: formData.location_province || null,
-        // ✅ New location columns
         location_name: formData.location_name || null,
         location_city: formData.location_city || null,
         location_province: formData.location_province || null,
-        // ✅ Features
         is_furnished: formData.is_furnished,
         furnished: formData.is_furnished,
         pets_allowed: formData.pets_allowed,
@@ -383,30 +389,31 @@ export default function AddPropertyPage() {
         is_active: true,
       }
 
-      log("Payload built ✅", propertyData)
+      log("FULL PAYLOAD being sent to Supabase:", propertyData)
 
-      // ── Step 4: Test DB connection ──
-      log("STEP 4: Testing DB connection...")
+      // ── Step 5: Test basic Supabase connectivity ──
+      log("STEP 5: Testing Supabase connectivity with a simple SELECT...")
       const { data: pingData, error: pingError } = await supabase
         .from("properties")
         .select("id")
         .limit(1)
 
       if (pingError) {
-        logError("DB connectivity FAILED", {
+        logError("Supabase connectivity test FAILED", {
           message: pingError.message,
           code: pingError.code,
           details: pingError.details,
           hint: pingError.hint,
         })
-        setError(`Database error: ${pingError.message}`)
+        setError(`Database connection failed: ${pingError.message}`)
         setLoading(false)
         return
       }
-      log("DB connection OK ✅", { rows: pingData?.length })
+      log("Supabase connectivity OK ✅", { rowsReturned: pingData?.length })
 
-      // ── Step 5: Insert property ──
-      log("STEP 5: Inserting property...")
+      // ── Step 6: Insert property ──
+      log("STEP 6: Inserting property into DB (no timeout this time)...")
+
       const { data: createdProperty, error: propertyError } = await supabase
         .from("properties")
         .insert(propertyData)
@@ -414,43 +421,41 @@ export default function AddPropertyPage() {
         .single()
 
       if (propertyError) {
-        logError("INSERT FAILED ❌", {
+        logError("INSERT FAILED", {
           message: propertyError.message,
           code: propertyError.code,
           details: propertyError.details,
           hint: propertyError.hint,
         })
-        setError(`Failed to save: ${propertyError.message} (code: ${propertyError.code})`)
+        setError(`Failed to save property: ${propertyError.message} (code: ${propertyError.code})`)
         setLoading(false)
         return
       }
 
       if (!createdProperty?.id) {
-        logError("No ID returned from insert")
-        setError("Property was not saved. Please try again.")
+        logError("Insert returned no ID", createdProperty)
+        setError("Property was not saved — no ID returned. Please try again.")
         setLoading(false)
         return
       }
 
-      log("✅ Property saved! ID:", createdProperty.id)
+      log("✅ Property inserted successfully! ID:", createdProperty.id)
 
-      // ── Step 6: Upload images ──
+      // ── Step 7: Upload images ──
       if (images.length > 0) {
-        log("STEP 6: Uploading images...")
+        log("STEP 7: Uploading images...")
         try {
           await uploadImages(createdProperty.id)
-          log("✅ Images done")
         } catch (imgErr: any) {
-          logError("Image upload failed (property still saved)", imgErr.message)
-          // ✅ Don't block — property IS saved, images just failed
+          logError("Image upload failed but property was saved", imgErr.message)
         }
       } else {
-        log("STEP 6: No images to upload, skipping")
+        log("STEP 7: No images to upload, skipping")
       }
 
-      // ── Step 7: Save amenities ──
+      // ── Step 8: Save amenities ──
       if (amenities.length > 0) {
-        log("STEP 7: Saving amenities...", amenities)
+        log("STEP 8: Saving amenities...", amenities)
         const amenityData = amenities.map((amenity) => ({
           property_id: createdProperty.id,
           amenity_name: amenity,
@@ -467,22 +472,21 @@ export default function AddPropertyPage() {
           logError("Amenity save failed (property still saved)", {
             message: amenityError.message,
             code: amenityError.code,
-            details: amenityError.details,
-            hint: amenityError.hint,
           })
         } else {
           log("✅ Amenities saved")
         }
       } else {
-        log("STEP 7: No amenities, skipping")
+        log("STEP 8: No amenities to save, skipping")
       }
 
-      log("🎉 ALL DONE — redirecting...")
+      // ── Done ──
+      log("🎉 ALL STEPS COMPLETE — redirecting...")
       setSuccess("Property listed successfully! Redirecting...")
       setTimeout(() => router.push("/landlord/properties"), 1500)
 
     } catch (err: any) {
-      logError("UNCAUGHT ERROR", {
+      logError("UNCAUGHT ERROR in handleSubmit", {
         message: err.message,
         stack: err.stack,
       })
@@ -527,21 +531,12 @@ export default function AddPropertyPage() {
           </Alert>
         )}
 
-        {/* DEBUG PANEL */}
+        {/* ── DEBUG PANEL — remove before going to production ── */}
         {debugInfo.length > 0 && (
           <Card className="border-yellow-400 bg-yellow-50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-yellow-800 text-sm flex items-center justify-between">
+              <CardTitle className="text-yellow-800 text-sm">
                 🔍 Debug Log (remove before production)
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-yellow-700 h-6 text-xs"
-                  onClick={() => setDebugInfo([])}
-                >
-                  Clear
-                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -549,13 +544,13 @@ export default function AddPropertyPage() {
                 {debugInfo.map((line, i) => (
                   <div
                     key={i}
-                    className={
+                    className={`${
                       line.startsWith("❌")
                         ? "text-red-700 font-bold"
-                        : line.includes("✅") || line.includes("🎉")
+                        : line.startsWith("✅") || line.includes("complete")
                         ? "text-green-700"
                         : "text-yellow-900"
-                    }
+                    }`}
                   >
                     {line}
                   </div>
@@ -679,14 +674,11 @@ export default function AddPropertyPage() {
                 {selectedLocation && (
                   <p className="text-sm text-green-600 flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />
-                    {selectedLocation.name}, {selectedLocation.city},{" "}
-                    {selectedLocation.province}
+                    {selectedLocation.name}, {selectedLocation.city}, {selectedLocation.province}
                   </p>
                 )}
                 {locationSearch.length >= 2 && locationOptions.length === 0 && !selectedLocation && (
-                  <p className="text-sm text-gray-500">
-                    No results for "{locationSearch}"
-                  </p>
+                  <p className="text-sm text-gray-500">No results for "{locationSearch}"</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -715,31 +707,19 @@ export default function AddPropertyPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label>Bedrooms</Label>
-                <Select
-                  value={formData.bedrooms}
-                  onValueChange={(v) => handleInputChange("bedrooms", v)}
-                  disabled={loading}
-                >
+                <Select value={formData.bedrooms} onValueChange={(v) => handleInputChange("bedrooms", v)} disabled={loading}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[1,2,3,4,5].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                    ))}
+                    {[1,2,3,4,5].map((n) => <SelectItem key={n} value={n.toString()}>{n}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Bathrooms</Label>
-                <Select
-                  value={formData.bathrooms}
-                  onValueChange={(v) => handleInputChange("bathrooms", v)}
-                  disabled={loading}
-                >
+                <Select value={formData.bathrooms} onValueChange={(v) => handleInputChange("bathrooms", v)} disabled={loading}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[1,2,3,4].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                    ))}
+                    {[1,2,3,4].map((n) => <SelectItem key={n} value={n.toString()}>{n}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -757,16 +737,10 @@ export default function AddPropertyPage() {
               </div>
               <div className="space-y-2">
                 <Label>Parking Spaces</Label>
-                <Select
-                  value={formData.parking_spaces}
-                  onValueChange={(v) => handleInputChange("parking_spaces", v)}
-                  disabled={loading}
-                >
+                <Select value={formData.parking_spaces} onValueChange={(v) => handleInputChange("parking_spaces", v)} disabled={loading}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[0,1,2,3,4].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                    ))}
+                    {[0,1,2,3,4].map((n) => <SelectItem key={n} value={n.toString()}>{n}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -790,9 +764,7 @@ export default function AddPropertyPage() {
                     <Checkbox
                       id={id}
                       checked={formData[id as keyof PropertyFormData] as boolean}
-                      onCheckedChange={(checked) =>
-                        handleInputChange(id as keyof PropertyFormData, checked as boolean)
-                      }
+                      onCheckedChange={(checked) => handleInputChange(id as keyof PropertyFormData, checked as boolean)}
                       disabled={loading}
                     />
                     <Label htmlFor={id} className="cursor-pointer">{label}</Label>
@@ -852,31 +824,19 @@ export default function AddPropertyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Preferred Lease Duration (months)</Label>
-                <Select
-                  value={formData.lease_duration_months}
-                  onValueChange={(v) => handleInputChange("lease_duration_months", v)}
-                  disabled={loading}
-                >
+                <Select value={formData.lease_duration_months} onValueChange={(v) => handleInputChange("lease_duration_months", v)} disabled={loading}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[6,12,18,24,36].map((m) => (
-                      <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>
-                    ))}
+                    {[6,12,18,24,36].map((m) => <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Minimum Lease Duration (months)</Label>
-                <Select
-                  value={formData.minimum_lease_months}
-                  onValueChange={(v) => handleInputChange("minimum_lease_months", v)}
-                  disabled={loading}
-                >
+                <Select value={formData.minimum_lease_months} onValueChange={(v) => handleInputChange("minimum_lease_months", v)} disabled={loading}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[3,6,12,18,24].map((m) => (
-                      <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>
-                    ))}
+                    {[3,6,12,18,24].map((m) => <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -894,10 +854,7 @@ export default function AddPropertyPage() {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
               <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <div className="space-y-2">
-                <Label
-                  htmlFor="images"
-                  className="cursor-pointer text-blue-600 hover:text-blue-500 font-medium"
-                >
+                <Label htmlFor="images" className="cursor-pointer text-blue-600 hover:text-blue-500 font-medium">
                   Click to upload images
                 </Label>
                 <Input
@@ -909,9 +866,7 @@ export default function AddPropertyPage() {
                   className="hidden"
                   disabled={loading}
                 />
-                <p className="text-sm text-gray-500">
-                  JPG, PNG, GIF, WebP — up to 10MB each
-                </p>
+                <p className="text-sm text-gray-500">JPG, PNG, GIF, WebP — up to 10MB each</p>
               </div>
             </div>
             {images.length > 0 && (
@@ -935,16 +890,12 @@ export default function AddPropertyPage() {
                         <X className="h-3 w-3" />
                       </Button>
                       {index === 0 && (
-                        <Badge className="absolute bottom-1 left-1 text-xs bg-blue-600">
-                          Primary
-                        </Badge>
+                        <Badge className="absolute bottom-1 left-1 text-xs bg-blue-600">Primary</Badge>
                       )}
                     </div>
                   ))}
                 </div>
-                <p className="text-sm text-gray-500">
-                  {images.length}/10 images added
-                </p>
+                <p className="text-sm text-gray-500">{images.length}/10 images added</p>
               </>
             )}
           </CardContent>
@@ -962,30 +913,17 @@ export default function AddPropertyPage() {
                 placeholder="e.g., Swimming pool, Security guard..."
                 value={newAmenity}
                 onChange={(e) => setNewAmenity(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    addAmenity()
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAmenity() } }}
                 disabled={loading}
               />
-              <Button
-                type="button"
-                onClick={addAmenity}
-                disabled={loading || !newAmenity.trim()}
-              >
+              <Button type="button" onClick={addAmenity} disabled={loading || !newAmenity.trim()}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             {amenities.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {amenities.map((amenity) => (
-                  <Badge
-                    key={amenity}
-                    variant="secondary"
-                    className="flex items-center gap-1 pr-1"
-                  >
+                  <Badge key={amenity} variant="secondary" className="flex items-center gap-1 pr-1">
                     <span>{amenity}</span>
                     <button
                       type="button"

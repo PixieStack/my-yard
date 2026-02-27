@@ -52,7 +52,7 @@ interface PropertyFormData {
 }
 
 export default function AddPropertyPage() {
-  const { profile, user } = useAuth()
+  const { profile } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -62,7 +62,6 @@ export default function AddPropertyPage() {
   const [amenities, setAmenities] = useState<string[]>([])
   const [newAmenity, setNewAmenity] = useState("")
   const [today, setToday] = useState("")
-  const [debugInfo, setDebugInfo] = useState<string[]>([])
 
   // Location search state
   const [locationSearch, setLocationSearch] = useState("")
@@ -97,56 +96,27 @@ export default function AddPropertyPage() {
     minimum_lease_months: "6",
   })
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-
-  const log = (msg: string, data?: any) => {
-    const timestamp = new Date().toISOString().split("T")[1].split(".")[0]
-    const line = `[${timestamp}] ${msg}`
-    console.log(`🔍 ${line}`, data !== undefined ? data : "")
-    setDebugInfo((prev) => [
-      ...prev,
-      `${line}${data !== undefined ? ` → ${JSON.stringify(data)}` : ""}`,
-    ])
-  }
-
-  const logError = (msg: string, err?: any) => {
-    // ✅ Fully expanded error logging
-    const expanded = err
-      ? {
-          message: err?.message ?? "no message",
-          code: err?.code ?? "no code",
-          details: err?.details ?? "no details",
-          hint: err?.hint ?? "no hint",
-          status: err?.status ?? "no status",
-          raw: JSON.stringify(err),
-        }
-      : "no error object"
-
-    console.error(`❌ ${msg}`, expanded)
-    setDebugInfo((prev) => [
-      ...prev,
-      `❌ ${msg} → ${JSON.stringify(expanded)}`,
-    ])
-  }
-
-  // ─── Effects ──────────────────────────────────────────────────────────────
-
+  // Set today's date on client side only (avoids hydration mismatch)
   useEffect(() => {
-    setToday(new Date().toISOString().split("T")[0])
+    const date = new Date()
+    setToday(date.toISOString().split("T")[0])
   }, [])
 
+  // Cleanup image preview URLs on unmount
   useEffect(() => {
     return () => {
       imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
     }
-  }, []) // eslint-disable-line
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Debounced location search
   useEffect(() => {
     if (locationSearch.length < 2) {
       setLocationOptions([])
       setShowLocationDropdown(false)
       return
     }
+
     const results = searchTownships(locationSearch).slice(0, 20)
     const options: LocationOption[] = results.map((t) => ({
       value: JSON.stringify({ name: t.name, city: t.city, province: t.province }),
@@ -156,8 +126,6 @@ export default function AddPropertyPage() {
     setLocationOptions(options)
     setShowLocationDropdown(options.length > 0)
   }, [locationSearch])
-
-  // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const handleInputChange = (field: keyof PropertyFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -178,19 +146,30 @@ export default function AddPropertyPage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+
     const validFiles = files.filter((file) => {
       const isValidType = ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(file.type)
-      const isValidSize = file.size <= 10 * 1024 * 1024
-      if (!isValidType) { setError(`${file.name} is not a supported format`); return false }
-      if (!isValidSize) { setError(`${file.name} exceeds 10MB limit`); return false }
+      const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB
+
+      if (!isValidType) {
+        setError(`${file.name} is not a supported image format (use JPG, PNG, GIF, or WebP)`)
+        return false
+      }
+      if (!isValidSize) {
+        setError(`${file.name} is too large. Maximum size is 10MB`)
+        return false
+      }
       return true
     })
-    if (images.length + validFiles.length > 10) {
-      setError("Maximum 10 images allowed.")
+
+    const totalImages = images.length + validFiles.length
+    if (totalImages > 10) {
+      setError(`Maximum 10 images allowed. You have ${images.length} and tried to add ${validFiles.length}.`)
       return
     }
-    const newUrls = validFiles.map((f) => URL.createObjectURL(f))
-    setImagePreviewUrls((prev) => [...prev, ...newUrls])
+
+    const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file))
+    setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls])
     setImages((prev) => [...prev, ...validFiles])
     setError("")
   }
@@ -212,7 +191,68 @@ export default function AddPropertyPage() {
     setAmenities((prev) => prev.filter((a) => a !== amenity))
   }
 
-  // ─── Validate ─────────────────────────────────────────────────────────────
+  const uploadImages = async (propertyId: string) => {
+    if (images.length === 0) return
+
+    const uploadPromises = images.map(async (image, index) => {
+      console.log(`Uploading image ${index + 1}/${images.length}: ${image.name}`)
+
+      const fileExt = image.name.split(".").pop()
+      const fileName = `${propertyId}/${Date.now()}-${index}.${fileExt}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("property-images")
+        .upload(fileName, image, {
+          cacheControl: "3600",
+          upsert: false,
+        })
+
+      if (uploadError) {
+        console.warn(`⚠️ Storage upload failed for image ${index + 1}, using base64 fallback:`, uploadError.message)
+
+        // Fallback to base64 if storage fails
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(image)
+        })
+
+        return {
+          property_id: propertyId,
+          image_url: base64,
+          is_primary: index === 0,
+          display_order: index,
+          caption: `Property image ${index + 1}`,
+          image_type: "property",
+        }
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("property-images").getPublicUrl(fileName)
+
+      return {
+        property_id: propertyId,
+        image_url: publicUrl,
+        is_primary: index === 0,
+        display_order: index,
+        caption: `Property image ${index + 1}`,
+        image_type: "property",
+      }
+    })
+
+    const imageData = await Promise.all(uploadPromises)
+
+    const { error: dbError } = await supabase.from("property_images").insert(imageData)
+
+    if (dbError) {
+      console.error("❌ Error saving image records to DB:", dbError)
+      throw new Error(`Failed to save image records: ${dbError.message}`)
+    }
+
+    console.log(`✅ Successfully saved ${images.length} image(s)`)
+  }
 
   const validateForm = (): string | null => {
     if (!formData.title.trim()) return "Property title is required"
@@ -221,132 +261,46 @@ export default function AddPropertyPage() {
       return "Please enter a valid monthly rent amount"
     if (!formData.address.trim()) return "Street address is required"
     if (!formData.location_name) return "Please select a location from the dropdown"
+
     if (formData.available_from) {
-      const avail = new Date(formData.available_from)
-      const now = new Date()
-      now.setHours(0, 0, 0, 0)
-      if (avail < now) return "Available from date cannot be in the past"
+      const availableDate = new Date(formData.available_from)
+      const todayDate = new Date()
+      todayDate.setHours(0, 0, 0, 0)
+      if (availableDate < todayDate) return "Available from date cannot be in the past"
     }
-    if (parseInt(formData.minimum_lease_months) > parseInt(formData.lease_duration_months))
-      return "Minimum lease cannot exceed preferred lease duration"
+
+    const minLease = parseInt(formData.minimum_lease_months)
+    const prefLease = parseInt(formData.lease_duration_months)
+    if (minLease > prefLease) return "Minimum lease duration cannot exceed preferred lease duration"
+
     return null
   }
-
-  // ─── Upload Images ─────────────────────────────────────────────────────────
-
-  const uploadImages = async (propertyId: string) => {
-    log(`Uploading ${images.length} image(s) for property ${propertyId}`)
-
-    // ✅ First check what columns property_images actually has
-    const uploadPromises = images.map(async (image, index) => {
-      const fileExt = image.name.split(".").pop()
-      const fileName = `${propertyId}/${Date.now()}-${index}.${fileExt}`
-
-      log(`Processing image ${index + 1}: ${image.name}`)
-
-      // Try storage upload first
-      const { error: uploadError } = await supabase.storage
-        .from("property-images")
-        .upload(fileName, image, { cacheControl: "3600", upsert: false })
-
-      let imageUrl: string
-
-      if (uploadError) {
-        logError(`Storage upload failed for image ${index + 1} — using base64 fallback`, uploadError)
-        // Fallback to base64
-        imageUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(image)
-        })
-        log(`Image ${index + 1} converted to base64 fallback`)
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from("property-images")
-          .getPublicUrl(fileName)
-        imageUrl = publicUrl
-        log(`Image ${index + 1} uploaded to storage`, publicUrl)
-      }
-
-      // ✅ Only send columns we KNOW exist from your schema check
-      return {
-        property_id: propertyId,
-        image_url: imageUrl,
-        is_primary: index === 0,
-        display_order: index,
-      }
-    })
-
-    const imageData = await Promise.all(uploadPromises)
-    log("All images processed, inserting into property_images...", imageData.length)
-    log("Image data being inserted:", imageData)
-
-    const { data: insertedImages, error: dbError } = await supabase
-      .from("property_images")
-      .insert(imageData)
-      .select()
-
-    if (dbError) {
-      logError("property_images INSERT failed", {
-        message: dbError.message,
-        code: dbError.code,
-        details: dbError.details,
-        hint: dbError.hint,
-      })
-      throw new Error(`Image DB save failed: ${dbError.message} (code: ${dbError.code})`)
-    }
-
-    log(`✅ ${insertedImages?.length ?? 0} image records saved to DB`)
-  }
-
-  // ─── Submit ────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
     setSuccess("")
-    setDebugInfo([])
 
     try {
-      // ── Step 1: Validate ──
-      log("STEP 1: Validating form...")
+      // --- Validate form ---
       const validationError = validateForm()
       if (validationError) {
-        logError("Validation failed", validationError)
         setError(validationError)
         setLoading(false)
         return
       }
-      log("Validation passed ✅")
 
-      // ── Step 2: Check profile ──
-      log("STEP 2: Checking profile...")
-      log("profile.id", profile?.id)
-      log("profile.role", profile?.role)
-      log("supabase user.id", user?.id)
-
+      // --- Check auth ---
       if (!profile?.id) {
-        logError("No profile ID found")
-        setError("Your account is not loaded. Please sign out and sign back in.")
+        setError("You must be logged in to create a property")
         setLoading(false)
         return
       }
 
-      // ✅ Warn if profile.id doesn't match supabase user.id
-      if (user?.id && profile.id !== user.id) {
-        logError("⚠️ profile.id does not match supabase user.id!", {
-          profileId: profile.id,
-          userId: user.id,
-        })
-      }
+      console.log("🏠 Creating property for landlord:", profile.id)
 
-      log("Profile ID ✅", profile.id)
-
-      // ── Step 3: Build payload ──
-      log("STEP 3: Building property payload...")
-
+      // --- Build property object matching EXACT DB columns ---
       const propertyData = {
         landlord_id: profile.id,
         title: formData.title.trim(),
@@ -358,16 +312,13 @@ export default function AddPropertyPage() {
         bathrooms: parseInt(formData.bathrooms),
         square_meters: formData.square_meters ? parseInt(formData.square_meters) : null,
         address: formData.address.trim(),
-        // ✅ Legacy columns
-        city: formData.location_city || null,
-        province: formData.location_province || null,
-        // ✅ New location columns
+        // Location fields
         location_name: formData.location_name || null,
         location_city: formData.location_city || null,
         location_province: formData.location_province || null,
-        // ✅ Features
+        // Boolean features
         is_furnished: formData.is_furnished,
-        furnished: formData.is_furnished,
+        furnished: formData.is_furnished, // DB has both columns
         pets_allowed: formData.pets_allowed,
         smoking_allowed: formData.smoking_allowed,
         parking_spaces: parseInt(formData.parking_spaces),
@@ -376,83 +327,73 @@ export default function AddPropertyPage() {
         electricity_included: formData.electricity_included,
         water_included: formData.water_included,
         gas_included: formData.gas_included,
+        // Dates & lease
         available_from: formData.available_from || null,
         lease_duration_months: parseInt(formData.lease_duration_months),
         minimum_lease_months: parseInt(formData.minimum_lease_months),
+        // Status
         status: "available",
         is_active: true,
+        // township_id is nullable so we omit it
       }
 
-      log("Payload built ✅", propertyData)
+      console.log("📦 Property payload:", propertyData)
 
-      // ── Step 4: Test DB connection ──
-      log("STEP 4: Testing DB connection...")
-      const { data: pingData, error: pingError } = await supabase
-        .from("properties")
-        .select("id")
-        .limit(1)
+      // --- Insert with 15s timeout ---
+      const insertWithTimeout = async () => {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timed out. Check your internet connection.")), 15000)
+        )
 
-      if (pingError) {
-        logError("DB connectivity FAILED", {
-          message: pingError.message,
-          code: pingError.code,
-          details: pingError.details,
-          hint: pingError.hint,
-        })
-        setError(`Database error: ${pingError.message}`)
-        setLoading(false)
-        return
+        const insertPromise = supabase
+          .from("properties")
+          .insert(propertyData)
+          .select("id")
+          .single()
+
+        return Promise.race([insertPromise, timeoutPromise])
       }
-      log("DB connection OK ✅", { rows: pingData?.length })
 
-      // ── Step 5: Insert property ──
-      log("STEP 5: Inserting property...")
-      const { data: createdProperty, error: propertyError } = await supabase
-        .from("properties")
-        .insert(propertyData)
-        .select("id")
-        .single()
+      const { data: createdProperty, error: propertyError } = await insertWithTimeout() as any
 
       if (propertyError) {
-        logError("INSERT FAILED ❌", {
+        console.error("❌ Supabase insert error:", {
           message: propertyError.message,
           code: propertyError.code,
           details: propertyError.details,
           hint: propertyError.hint,
         })
-        setError(`Failed to save: ${propertyError.message} (code: ${propertyError.code})`)
+        setError(`Failed to save property: ${propertyError.message}`)
         setLoading(false)
         return
       }
 
       if (!createdProperty?.id) {
-        logError("No ID returned from insert")
+        console.error("❌ No ID returned from insert")
         setError("Property was not saved. Please try again.")
         setLoading(false)
         return
       }
 
-      log("✅ Property saved! ID:", createdProperty.id)
+      const propertyId = createdProperty.id
+      console.log("✅ Property saved with ID:", propertyId)
 
-      // ── Step 6: Upload images ──
+      // --- Upload images (non-blocking) ---
       if (images.length > 0) {
-        log("STEP 6: Uploading images...")
+        console.log("🖼️ Uploading images...")
         try {
-          await uploadImages(createdProperty.id)
-          log("✅ Images done")
-        } catch (imgErr: any) {
-          logError("Image upload failed (property still saved)", imgErr.message)
-          // ✅ Don't block — property IS saved, images just failed
+          await uploadImages(propertyId)
+        } catch (imgError: any) {
+          console.warn("⚠️ Image upload issue (property still saved):", imgError.message)
+          // Property is saved — don't block on image errors
         }
-      } else {
-        log("STEP 6: No images to upload, skipping")
       }
 
-      // ── Step 7: Save amenities ──
+      // --- Save amenities (non-blocking) ---
       if (amenities.length > 0) {
-        log("STEP 7: Saving amenities...", amenities)
+        console.log("🏷️ Saving amenities...")
         const amenityData = amenities.map((amenity) => ({
-          property_id: createdProperty.id,
+          property_id: propertyId,
           amenity_name: amenity,
           amenity_category: "general",
           amenity_description: amenity,
@@ -464,35 +405,28 @@ export default function AddPropertyPage() {
           .insert(amenityData)
 
         if (amenityError) {
-          logError("Amenity save failed (property still saved)", {
-            message: amenityError.message,
-            code: amenityError.code,
-            details: amenityError.details,
-            hint: amenityError.hint,
-          })
+          console.warn("⚠️ Amenity save issue (property still saved):", amenityError.message)
+          // Don't block on amenity errors
         } else {
-          log("✅ Amenities saved")
+          console.log("✅ Amenities saved")
         }
-      } else {
-        log("STEP 7: No amenities, skipping")
       }
 
-      log("🎉 ALL DONE — redirecting...")
+      // --- Success ---
       setSuccess("Property listed successfully! Redirecting...")
-      setTimeout(() => router.push("/landlord/properties"), 1500)
+      console.log("🎉 All done!")
+
+      setTimeout(() => {
+        router.push("/landlord/properties")
+      }, 1500)
 
     } catch (err: any) {
-      logError("UNCAUGHT ERROR", {
-        message: err.message,
-        stack: err.stack,
-      })
+      console.error("❌ Unexpected error during property creation:", err)
       setError(err.message || "Something went wrong. Please try again.")
     } finally {
       setLoading(false)
     }
   }
-
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
@@ -511,7 +445,6 @@ export default function AddPropertyPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-
         {/* Error Alert */}
         {error && (
           <Alert variant="destructive">
@@ -525,44 +458,6 @@ export default function AddPropertyPage() {
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-700">{success}</AlertDescription>
           </Alert>
-        )}
-
-        {/* DEBUG PANEL */}
-        {debugInfo.length > 0 && (
-          <Card className="border-yellow-400 bg-yellow-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-yellow-800 text-sm flex items-center justify-between">
-                🔍 Debug Log (remove before production)
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-yellow-700 h-6 text-xs"
-                  onClick={() => setDebugInfo([])}
-                >
-                  Clear
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="font-mono text-xs space-y-1 max-h-64 overflow-y-auto">
-                {debugInfo.map((line, i) => (
-                  <div
-                    key={i}
-                    className={
-                      line.startsWith("❌")
-                        ? "text-red-700 font-bold"
-                        : line.includes("✅") || line.includes("🎉")
-                        ? "text-green-700"
-                        : "text-yellow-900"
-                    }
-                  >
-                    {line}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         )}
 
         {/* Basic Information */}
@@ -585,6 +480,7 @@ export default function AddPropertyPage() {
                   disabled={loading}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="property_type">
                   Property Type <span className="text-red-500">*</span>
@@ -605,6 +501,7 @@ export default function AddPropertyPage() {
                 </Select>
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -627,6 +524,7 @@ export default function AddPropertyPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Township Search */}
               <div className="space-y-2 relative">
                 <Label htmlFor="location">
                   Township / Area <span className="text-red-500">*</span>
@@ -656,13 +554,15 @@ export default function AddPropertyPage() {
                     disabled={loading}
                   />
                 </div>
+
+                {/* Dropdown */}
                 {showLocationDropdown && locationOptions.length > 0 && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
                     {locationOptions.map((option, index) => (
                       <button
                         key={index}
                         type="button"
-                        className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
                         onMouseDown={() => selectLocation(option)}
                       >
                         <span className="font-medium">{option.township.name}</span>
@@ -676,19 +576,22 @@ export default function AddPropertyPage() {
                     ))}
                   </div>
                 )}
+
+                {/* Selected location confirmation */}
                 {selectedLocation && (
                   <p className="text-sm text-green-600 flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />
-                    {selectedLocation.name}, {selectedLocation.city},{" "}
-                    {selectedLocation.province}
+                    {selectedLocation.name}, {selectedLocation.city}, {selectedLocation.province}
                   </p>
                 )}
+
+                {/* No results hint */}
                 {locationSearch.length >= 2 && locationOptions.length === 0 && !selectedLocation && (
-                  <p className="text-sm text-gray-500">
-                    No results for "{locationSearch}"
-                  </p>
+                  <p className="text-sm text-gray-500">No townships found for "{locationSearch}"</p>
                 )}
               </div>
+
+              {/* Street Address */}
               <div className="space-y-2">
                 <Label htmlFor="address">
                   Street Address <span className="text-red-500">*</span>
@@ -717,32 +620,42 @@ export default function AddPropertyPage() {
                 <Label>Bedrooms</Label>
                 <Select
                   value={formData.bedrooms}
-                  onValueChange={(v) => handleInputChange("bedrooms", v)}
+                  onValueChange={(value) => handleInputChange("bedrooms", value)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[1,2,3,4,5].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <Label>Bathrooms</Label>
                 <Select
                   value={formData.bathrooms}
-                  onValueChange={(v) => handleInputChange("bathrooms", v)}
+                  onValueChange={(value) => handleInputChange("bathrooms", value)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[1,2,3,4].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                    {[1, 2, 3, 4].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="square_meters">Size (m²)</Label>
                 <Input
@@ -755,24 +668,29 @@ export default function AddPropertyPage() {
                   disabled={loading}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label>Parking Spaces</Label>
                 <Select
                   value={formData.parking_spaces}
-                  onValueChange={(v) => handleInputChange("parking_spaces", v)}
+                  onValueChange={(value) => handleInputChange("parking_spaces", value)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[0,1,2,3,4].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                    {[0, 1, 2, 3, 4].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Features */}
+            {/* Features Checkboxes */}
             <div className="space-y-3">
               <Label>Property Features</Label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -795,7 +713,9 @@ export default function AddPropertyPage() {
                       }
                       disabled={loading}
                     />
-                    <Label htmlFor={id} className="cursor-pointer">{label}</Label>
+                    <Label htmlFor={id} className="cursor-pointer">
+                      {label}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -825,6 +745,7 @@ export default function AddPropertyPage() {
                   disabled={loading}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="deposit_amount">Deposit Amount (R)</Label>
                 <Input
@@ -837,6 +758,7 @@ export default function AddPropertyPage() {
                   disabled={loading}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="available_from">Available From</Label>
                 <Input
@@ -849,33 +771,43 @@ export default function AddPropertyPage() {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Preferred Lease Duration (months)</Label>
                 <Select
                   value={formData.lease_duration_months}
-                  onValueChange={(v) => handleInputChange("lease_duration_months", v)}
+                  onValueChange={(value) => handleInputChange("lease_duration_months", value)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[6,12,18,24,36].map((m) => (
-                      <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>
+                    {[6, 12, 18, 24, 36].map((m) => (
+                      <SelectItem key={m} value={m.toString()}>
+                        {m} months
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <Label>Minimum Lease Duration (months)</Label>
                 <Select
                   value={formData.minimum_lease_months}
-                  onValueChange={(v) => handleInputChange("minimum_lease_months", v)}
+                  onValueChange={(value) => handleInputChange("minimum_lease_months", value)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[3,6,12,18,24].map((m) => (
-                      <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>
+                    {[3, 6, 12, 18, 24].map((m) => (
+                      <SelectItem key={m} value={m.toString()}>
+                        {m} months
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -909,43 +841,43 @@ export default function AddPropertyPage() {
                   className="hidden"
                   disabled={loading}
                 />
-                <p className="text-sm text-gray-500">
-                  JPG, PNG, GIF, WebP — up to 10MB each
-                </p>
+                <p className="text-sm text-gray-500">JPG, PNG, GIF, WebP — up to 10MB each</p>
               </div>
             </div>
+
             {images.length > 0 && (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {images.map((_, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={imagePreviewUrls[index] || "/placeholder.svg"}
-                        alt={`Property image ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
-                        onClick={() => removeImage(index)}
-                        disabled={loading}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                      {index === 0 && (
-                        <Badge className="absolute bottom-1 left-1 text-xs bg-blue-600">
-                          Primary
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-500">
-                  {images.length}/10 images added
-                </p>
-              </>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={imagePreviewUrls[index] || "/placeholder.svg"}
+                      alt={`Property image ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                      onClick={() => removeImage(index)}
+                      disabled={loading}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                    {index === 0 && (
+                      <Badge className="absolute bottom-1 left-1 text-xs bg-blue-600">
+                        Primary
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {images.length > 0 && (
+              <p className="text-sm text-gray-500">
+                {images.length}/10 images added
+              </p>
             )}
           </CardContent>
         </Card>
@@ -970,27 +902,20 @@ export default function AddPropertyPage() {
                 }}
                 disabled={loading}
               />
-              <Button
-                type="button"
-                onClick={addAmenity}
-                disabled={loading || !newAmenity.trim()}
-              >
+              <Button type="button" onClick={addAmenity} disabled={loading || !newAmenity.trim()}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+
             {amenities.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {amenities.map((amenity) => (
-                  <Badge
-                    key={amenity}
-                    variant="secondary"
-                    className="flex items-center gap-1 pr-1"
-                  >
+                  <Badge key={amenity} variant="secondary" className="flex items-center gap-1 pr-1">
                     <span>{amenity}</span>
                     <button
                       type="button"
                       onClick={() => removeAmenity(amenity)}
-                      className="ml-1 hover:text-red-500"
+                      className="ml-1 hover:text-red-500 disabled:opacity-50"
                       disabled={loading}
                     >
                       <X className="h-3 w-3" />
@@ -1002,7 +927,7 @@ export default function AddPropertyPage() {
           </CardContent>
         </Card>
 
-        {/* Submit */}
+        {/* Submit Buttons */}
         <div className="flex justify-end space-x-4 pb-8">
           <Link href="/landlord/properties">
             <Button type="button" variant="outline" disabled={loading}>

@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning> {/* ✅ Fixes Grammarly hydration mismatch */}
+      <body>
         <AuthProvider>
           {children}
           <Toaster />

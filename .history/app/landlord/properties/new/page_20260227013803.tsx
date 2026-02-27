@@ -110,23 +110,13 @@ export default function AddPropertyPage() {
   }
 
   const logError = (msg: string, err?: any) => {
-    // ✅ Fully expanded error logging
-    const expanded = err
-      ? {
-          message: err?.message ?? "no message",
-          code: err?.code ?? "no code",
-          details: err?.details ?? "no details",
-          hint: err?.hint ?? "no hint",
-          status: err?.status ?? "no status",
-          raw: JSON.stringify(err),
-        }
-      : "no error object"
-
-    console.error(`❌ ${msg}`, expanded)
-    setDebugInfo((prev) => [
-      ...prev,
-      `❌ ${msg} → ${JSON.stringify(expanded)}`,
-    ])
+    console.error(`❌ ${msg}`, err)
+    const detail = err
+      ? typeof err === "object"
+        ? JSON.stringify(err, null, 2)
+        : String(err)
+      : ""
+    setDebugInfo((prev) => [...prev, `❌ ${msg} ${detail}`])
   }
 
   // ─── Effects ──────────────────────────────────────────────────────────────
@@ -235,69 +225,57 @@ export default function AddPropertyPage() {
   // ─── Upload Images ─────────────────────────────────────────────────────────
 
   const uploadImages = async (propertyId: string) => {
-    log(`Uploading ${images.length} image(s) for property ${propertyId}`)
+    log(`Uploading ${images.length} image(s) for property`, propertyId)
 
-    // ✅ First check what columns property_images actually has
     const uploadPromises = images.map(async (image, index) => {
       const fileExt = image.name.split(".").pop()
       const fileName = `${propertyId}/${Date.now()}-${index}.${fileExt}`
 
-      log(`Processing image ${index + 1}: ${image.name}`)
-
-      // Try storage upload first
       const { error: uploadError } = await supabase.storage
         .from("property-images")
         .upload(fileName, image, { cacheControl: "3600", upsert: false })
 
-      let imageUrl: string
-
       if (uploadError) {
-        logError(`Storage upload failed for image ${index + 1} — using base64 fallback`, uploadError)
-        // Fallback to base64
-        imageUrl = await new Promise<string>((resolve, reject) => {
+        logError(`Storage upload failed for image ${index + 1}`, uploadError)
+        // Fallback: base64
+        const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
           reader.onload = () => resolve(reader.result as string)
           reader.onerror = reject
           reader.readAsDataURL(image)
         })
-        log(`Image ${index + 1} converted to base64 fallback`)
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from("property-images")
-          .getPublicUrl(fileName)
-        imageUrl = publicUrl
-        log(`Image ${index + 1} uploaded to storage`, publicUrl)
+        return {
+          property_id: propertyId,
+          image_url: base64,
+          is_primary: index === 0,
+          display_order: index,
+          caption: `Property image ${index + 1}`,
+          image_type: "property",
+        }
       }
 
-      // ✅ Only send columns we KNOW exist from your schema check
+      const { data: { publicUrl } } = supabase.storage
+        .from("property-images")
+        .getPublicUrl(fileName)
+
       return {
         property_id: propertyId,
-        image_url: imageUrl,
+        image_url: publicUrl,
         is_primary: index === 0,
         display_order: index,
+        caption: `Property image ${index + 1}`,
+        image_type: "property",
       }
     })
 
     const imageData = await Promise.all(uploadPromises)
-    log("All images processed, inserting into property_images...", imageData.length)
-    log("Image data being inserted:", imageData)
 
-    const { data: insertedImages, error: dbError } = await supabase
-      .from("property_images")
-      .insert(imageData)
-      .select()
-
+    const { error: dbError } = await supabase.from("property_images").insert(imageData)
     if (dbError) {
-      logError("property_images INSERT failed", {
-        message: dbError.message,
-        code: dbError.code,
-        details: dbError.details,
-        hint: dbError.hint,
-      })
-      throw new Error(`Image DB save failed: ${dbError.message} (code: ${dbError.code})`)
+      logError("property_images insert failed", dbError)
+      throw new Error(`Image DB save failed: ${dbError.message}`)
     }
-
-    log(`✅ ${insertedImages?.length ?? 0} image records saved to DB`)
+    log("✅ Images saved to DB")
   }
 
   // ─── Submit ────────────────────────────────────────────────────────────────
@@ -323,9 +301,8 @@ export default function AddPropertyPage() {
 
       // ── Step 2: Check profile ──
       log("STEP 2: Checking profile...")
-      log("profile.id", profile?.id)
-      log("profile.role", profile?.role)
-      log("supabase user.id", user?.id)
+      log("profile", profile)
+      log("user", user)
 
       if (!profile?.id) {
         logError("No profile ID found")
@@ -333,20 +310,10 @@ export default function AddPropertyPage() {
         setLoading(false)
         return
       }
-
-      // ✅ Warn if profile.id doesn't match supabase user.id
-      if (user?.id && profile.id !== user.id) {
-        logError("⚠️ profile.id does not match supabase user.id!", {
-          profileId: profile.id,
-          userId: user.id,
-        })
-      }
-
       log("Profile ID ✅", profile.id)
 
       // ── Step 3: Build payload ──
-      log("STEP 3: Building property payload...")
-
+      log("STEP 3: Building payload...")
       const propertyData = {
         landlord_id: profile.id,
         title: formData.title.trim(),
@@ -358,14 +325,9 @@ export default function AddPropertyPage() {
         bathrooms: parseInt(formData.bathrooms),
         square_meters: formData.square_meters ? parseInt(formData.square_meters) : null,
         address: formData.address.trim(),
-        // ✅ Legacy columns
-        city: formData.location_city || null,
-        province: formData.location_province || null,
-        // ✅ New location columns
         location_name: formData.location_name || null,
         location_city: formData.location_city || null,
         location_province: formData.location_province || null,
-        // ✅ Features
         is_furnished: formData.is_furnished,
         furnished: formData.is_furnished,
         pets_allowed: formData.pets_allowed,
@@ -382,10 +344,9 @@ export default function AddPropertyPage() {
         status: "available",
         is_active: true,
       }
-
       log("Payload built ✅", propertyData)
 
-      // ── Step 4: Test DB connection ──
+      // ── Step 4: Test DB connectivity ──
       log("STEP 4: Testing DB connection...")
       const { data: pingData, error: pingError } = await supabase
         .from("properties")
@@ -406,7 +367,7 @@ export default function AddPropertyPage() {
       log("DB connection OK ✅", { rows: pingData?.length })
 
       // ── Step 5: Insert property ──
-      log("STEP 5: Inserting property...")
+      log("STEP 5: Inserting property into DB...")
       const { data: createdProperty, error: propertyError } = await supabase
         .from("properties")
         .insert(propertyData)
@@ -439,13 +400,11 @@ export default function AddPropertyPage() {
         log("STEP 6: Uploading images...")
         try {
           await uploadImages(createdProperty.id)
-          log("✅ Images done")
         } catch (imgErr: any) {
           logError("Image upload failed (property still saved)", imgErr.message)
-          // ✅ Don't block — property IS saved, images just failed
         }
       } else {
-        log("STEP 6: No images to upload, skipping")
+        log("STEP 6: No images to upload")
       }
 
       // ── Step 7: Save amenities ──
@@ -467,14 +426,12 @@ export default function AddPropertyPage() {
           logError("Amenity save failed (property still saved)", {
             message: amenityError.message,
             code: amenityError.code,
-            details: amenityError.details,
-            hint: amenityError.hint,
           })
         } else {
           log("✅ Amenities saved")
         }
       } else {
-        log("STEP 7: No amenities, skipping")
+        log("STEP 7: No amenities to save")
       }
 
       log("🎉 ALL DONE — redirecting...")
@@ -527,7 +484,7 @@ export default function AddPropertyPage() {
           </Alert>
         )}
 
-        {/* DEBUG PANEL */}
+        {/* DEBUG PANEL — remove before going live */}
         {debugInfo.length > 0 && (
           <Card className="border-yellow-400 bg-yellow-50">
             <CardHeader className="pb-2">
@@ -679,14 +636,11 @@ export default function AddPropertyPage() {
                 {selectedLocation && (
                   <p className="text-sm text-green-600 flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />
-                    {selectedLocation.name}, {selectedLocation.city},{" "}
-                    {selectedLocation.province}
+                    {selectedLocation.name}, {selectedLocation.city}, {selectedLocation.province}
                   </p>
                 )}
                 {locationSearch.length >= 2 && locationOptions.length === 0 && !selectedLocation && (
-                  <p className="text-sm text-gray-500">
-                    No results for "{locationSearch}"
-                  </p>
+                  <p className="text-sm text-gray-500">No results for "{locationSearch}"</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -909,9 +863,7 @@ export default function AddPropertyPage() {
                   className="hidden"
                   disabled={loading}
                 />
-                <p className="text-sm text-gray-500">
-                  JPG, PNG, GIF, WebP — up to 10MB each
-                </p>
+                <p className="text-sm text-gray-500">JPG, PNG, GIF, WebP — up to 10MB each</p>
               </div>
             </div>
             {images.length > 0 && (
@@ -942,9 +894,7 @@ export default function AddPropertyPage() {
                     </div>
                   ))}
                 </div>
-                <p className="text-sm text-gray-500">
-                  {images.length}/10 images added
-                </p>
+                <p className="text-sm text-gray-500">{images.length}/10 images added</p>
               </>
             )}
           </CardContent>

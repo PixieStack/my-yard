@@ -110,23 +110,13 @@ export default function AddPropertyPage() {
   }
 
   const logError = (msg: string, err?: any) => {
-    // ✅ Fully expanded error logging
-    const expanded = err
-      ? {
-          message: err?.message ?? "no message",
-          code: err?.code ?? "no code",
-          details: err?.details ?? "no details",
-          hint: err?.hint ?? "no hint",
-          status: err?.status ?? "no status",
-          raw: JSON.stringify(err),
-        }
-      : "no error object"
-
-    console.error(`❌ ${msg}`, expanded)
-    setDebugInfo((prev) => [
-      ...prev,
-      `❌ ${msg} → ${JSON.stringify(expanded)}`,
-    ])
+    console.error(`❌ ${msg}`, err)
+    const detail = err
+      ? typeof err === "object"
+        ? JSON.stringify(err, null, 2)
+        : String(err)
+      : ""
+    setDebugInfo((prev) => [...prev, `❌ ${msg} ${detail}`])
   }
 
   // ─── Effects ──────────────────────────────────────────────────────────────
@@ -235,69 +225,55 @@ export default function AddPropertyPage() {
   // ─── Upload Images ─────────────────────────────────────────────────────────
 
   const uploadImages = async (propertyId: string) => {
-    log(`Uploading ${images.length} image(s) for property ${propertyId}`)
+    log(`Uploading ${images.length} image(s)`, propertyId)
 
-    // ✅ First check what columns property_images actually has
     const uploadPromises = images.map(async (image, index) => {
       const fileExt = image.name.split(".").pop()
       const fileName = `${propertyId}/${Date.now()}-${index}.${fileExt}`
 
-      log(`Processing image ${index + 1}: ${image.name}`)
-
-      // Try storage upload first
       const { error: uploadError } = await supabase.storage
         .from("property-images")
         .upload(fileName, image, { cacheControl: "3600", upsert: false })
 
-      let imageUrl: string
-
       if (uploadError) {
-        logError(`Storage upload failed for image ${index + 1} — using base64 fallback`, uploadError)
-        // Fallback to base64
-        imageUrl = await new Promise<string>((resolve, reject) => {
+        logError(`Storage upload failed for image ${index + 1}, using base64`, uploadError)
+        const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
           reader.onload = () => resolve(reader.result as string)
           reader.onerror = reject
           reader.readAsDataURL(image)
         })
-        log(`Image ${index + 1} converted to base64 fallback`)
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from("property-images")
-          .getPublicUrl(fileName)
-        imageUrl = publicUrl
-        log(`Image ${index + 1} uploaded to storage`, publicUrl)
+        return {
+          property_id: propertyId,
+          image_url: base64,
+          is_primary: index === 0,
+          display_order: index,
+          caption: `Property image ${index + 1}`,
+          image_type: "property",
+        }
       }
 
-      // ✅ Only send columns we KNOW exist from your schema check
+      const { data: { publicUrl } } = supabase.storage
+        .from("property-images")
+        .getPublicUrl(fileName)
+
       return {
         property_id: propertyId,
-        image_url: imageUrl,
+        image_url: publicUrl,
         is_primary: index === 0,
         display_order: index,
+        caption: `Property image ${index + 1}`,
+        image_type: "property",
       }
     })
 
     const imageData = await Promise.all(uploadPromises)
-    log("All images processed, inserting into property_images...", imageData.length)
-    log("Image data being inserted:", imageData)
-
-    const { data: insertedImages, error: dbError } = await supabase
-      .from("property_images")
-      .insert(imageData)
-      .select()
-
+    const { error: dbError } = await supabase.from("property_images").insert(imageData)
     if (dbError) {
-      logError("property_images INSERT failed", {
-        message: dbError.message,
-        code: dbError.code,
-        details: dbError.details,
-        hint: dbError.hint,
-      })
-      throw new Error(`Image DB save failed: ${dbError.message} (code: ${dbError.code})`)
+      logError("property_images insert failed", dbError)
+      throw new Error(`Image DB save failed: ${dbError.message}`)
     }
-
-    log(`✅ ${insertedImages?.length ?? 0} image records saved to DB`)
+    log("✅ Images saved to DB")
   }
 
   // ─── Submit ────────────────────────────────────────────────────────────────
@@ -323,9 +299,8 @@ export default function AddPropertyPage() {
 
       // ── Step 2: Check profile ──
       log("STEP 2: Checking profile...")
-      log("profile.id", profile?.id)
-      log("profile.role", profile?.role)
-      log("supabase user.id", user?.id)
+      log("profile", profile)
+      log("user", user)
 
       if (!profile?.id) {
         logError("No profile ID found")
@@ -333,19 +308,10 @@ export default function AddPropertyPage() {
         setLoading(false)
         return
       }
-
-      // ✅ Warn if profile.id doesn't match supabase user.id
-      if (user?.id && profile.id !== user.id) {
-        logError("⚠️ profile.id does not match supabase user.id!", {
-          profileId: profile.id,
-          userId: user.id,
-        })
-      }
-
       log("Profile ID ✅", profile.id)
 
       // ── Step 3: Build payload ──
-      log("STEP 3: Building property payload...")
+      log("STEP 3: Building payload...")
 
       const propertyData = {
         landlord_id: profile.id,
@@ -353,12 +319,16 @@ export default function AddPropertyPage() {
         description: formData.description.trim() || null,
         property_type: formData.property_type,
         rent_amount: parseFloat(formData.rent_amount),
-        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        deposit_amount: formData.deposit_amount
+          ? parseFloat(formData.deposit_amount)
+          : null,
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
-        square_meters: formData.square_meters ? parseInt(formData.square_meters) : null,
+        square_meters: formData.square_meters
+          ? parseInt(formData.square_meters)
+          : null,
         address: formData.address.trim(),
-        // ✅ Legacy columns
+        // ✅ Legacy columns — mapped from location fields
         city: formData.location_city || null,
         province: formData.location_province || null,
         // ✅ New location columns
@@ -376,16 +346,18 @@ export default function AddPropertyPage() {
         electricity_included: formData.electricity_included,
         water_included: formData.water_included,
         gas_included: formData.gas_included,
+        // ✅ Dates & lease
         available_from: formData.available_from || null,
         lease_duration_months: parseInt(formData.lease_duration_months),
         minimum_lease_months: parseInt(formData.minimum_lease_months),
+        // ✅ Status
         status: "available",
         is_active: true,
       }
 
       log("Payload built ✅", propertyData)
 
-      // ── Step 4: Test DB connection ──
+      // ── Step 4: Test DB connectivity ──
       log("STEP 4: Testing DB connection...")
       const { data: pingData, error: pingError } = await supabase
         .from("properties")
@@ -406,7 +378,7 @@ export default function AddPropertyPage() {
       log("DB connection OK ✅", { rows: pingData?.length })
 
       // ── Step 5: Insert property ──
-      log("STEP 5: Inserting property...")
+      log("STEP 5: Inserting property into DB...")
       const { data: createdProperty, error: propertyError } = await supabase
         .from("properties")
         .insert(propertyData)
@@ -420,7 +392,9 @@ export default function AddPropertyPage() {
           details: propertyError.details,
           hint: propertyError.hint,
         })
-        setError(`Failed to save: ${propertyError.message} (code: ${propertyError.code})`)
+        setError(
+          `Failed to save: ${propertyError.message} (code: ${propertyError.code})`
+        )
         setLoading(false)
         return
       }
@@ -439,13 +413,11 @@ export default function AddPropertyPage() {
         log("STEP 6: Uploading images...")
         try {
           await uploadImages(createdProperty.id)
-          log("✅ Images done")
         } catch (imgErr: any) {
           logError("Image upload failed (property still saved)", imgErr.message)
-          // ✅ Don't block — property IS saved, images just failed
         }
       } else {
-        log("STEP 6: No images to upload, skipping")
+        log("STEP 6: No images to upload")
       }
 
       // ── Step 7: Save amenities ──
@@ -467,14 +439,12 @@ export default function AddPropertyPage() {
           logError("Amenity save failed (property still saved)", {
             message: amenityError.message,
             code: amenityError.code,
-            details: amenityError.details,
-            hint: amenityError.hint,
           })
         } else {
           log("✅ Amenities saved")
         }
       } else {
-        log("STEP 7: No amenities, skipping")
+        log("STEP 7: No amenities to save")
       }
 
       log("🎉 ALL DONE — redirecting...")
@@ -527,7 +497,7 @@ export default function AddPropertyPage() {
           </Alert>
         )}
 
-        {/* DEBUG PANEL */}
+        {/* DEBUG PANEL — remove before going live */}
         {debugInfo.length > 0 && (
           <Card className="border-yellow-400 bg-yellow-50">
             <CardHeader className="pb-2">
@@ -569,7 +539,9 @@ export default function AddPropertyPage() {
         <Card>
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
-            <CardDescription>Provide the essential details about your property</CardDescription>
+            <CardDescription>
+              Provide the essential details about your property
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -591,7 +563,9 @@ export default function AddPropertyPage() {
                 </Label>
                 <Select
                   value={formData.property_type}
-                  onValueChange={(value) => handleInputChange("property_type", value)}
+                  onValueChange={(value) =>
+                    handleInputChange("property_type", value)
+                  }
                   disabled={loading}
                 >
                   <SelectTrigger>
@@ -611,7 +585,9 @@ export default function AddPropertyPage() {
                 id="description"
                 placeholder="Describe your property, its features, and what makes it special..."
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={4}
                 disabled={loading}
               />
@@ -649,8 +625,13 @@ export default function AddPropertyPage() {
                         }))
                       }
                     }}
-                    onFocus={() => locationOptions.length > 0 && setShowLocationDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
+                    onFocus={() =>
+                      locationOptions.length > 0 &&
+                      setShowLocationDropdown(true)
+                    }
+                    onBlur={() =>
+                      setTimeout(() => setShowLocationDropdown(false), 200)
+                    }
                     className="pl-10"
                     autoComplete="off"
                     disabled={loading}
@@ -665,7 +646,9 @@ export default function AddPropertyPage() {
                         className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
                         onMouseDown={() => selectLocation(option)}
                       >
-                        <span className="font-medium">{option.township.name}</span>
+                        <span className="font-medium">
+                          {option.township.name}
+                        </span>
                         <span className="text-gray-500 ml-1">
                           — {option.township.city}, {option.township.province}
                         </span>
@@ -683,11 +666,13 @@ export default function AddPropertyPage() {
                     {selectedLocation.province}
                   </p>
                 )}
-                {locationSearch.length >= 2 && locationOptions.length === 0 && !selectedLocation && (
-                  <p className="text-sm text-gray-500">
-                    No results for "{locationSearch}"
-                  </p>
-                )}
+                {locationSearch.length >= 2 &&
+                  locationOptions.length === 0 &&
+                  !selectedLocation && (
+                    <p className="text-sm text-gray-500">
+                      No results for "{locationSearch}"
+                    </p>
+                  )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">
@@ -697,7 +682,9 @@ export default function AddPropertyPage() {
                   id="address"
                   placeholder="e.g., 123 Main Street"
                   value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("address", e.target.value)
+                  }
                   disabled={loading}
                 />
               </div>
@@ -709,7 +696,9 @@ export default function AddPropertyPage() {
         <Card>
           <CardHeader>
             <CardTitle>Property Details</CardTitle>
-            <CardDescription>Specify the size and features of your property</CardDescription>
+            <CardDescription>
+              Specify the size and features of your property
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -720,10 +709,14 @@ export default function AddPropertyPage() {
                   onValueChange={(v) => handleInputChange("bedrooms", v)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[1,2,3,4,5].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <SelectItem key={n} value={n.toString()}>
+                        {n}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -735,10 +728,14 @@ export default function AddPropertyPage() {
                   onValueChange={(v) => handleInputChange("bathrooms", v)}
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[1,2,3,4].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                    {[1, 2, 3, 4].map((n) => (
+                      <SelectItem key={n} value={n.toString()}>
+                        {n}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -751,7 +748,9 @@ export default function AddPropertyPage() {
                   placeholder="50"
                   min="0"
                   value={formData.square_meters}
-                  onChange={(e) => handleInputChange("square_meters", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("square_meters", e.target.value)
+                  }
                   disabled={loading}
                 />
               </div>
@@ -759,13 +758,19 @@ export default function AddPropertyPage() {
                 <Label>Parking Spaces</Label>
                 <Select
                   value={formData.parking_spaces}
-                  onValueChange={(v) => handleInputChange("parking_spaces", v)}
+                  onValueChange={(v) =>
+                    handleInputChange("parking_spaces", v)
+                  }
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[0,1,2,3,4].map((n) => (
-                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                    {[0, 1, 2, 3, 4].map((n) => (
+                      <SelectItem key={n} value={n.toString()}>
+                        {n}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -789,13 +794,20 @@ export default function AddPropertyPage() {
                   <div key={id} className="flex items-center space-x-2">
                     <Checkbox
                       id={id}
-                      checked={formData[id as keyof PropertyFormData] as boolean}
+                      checked={
+                        formData[id as keyof PropertyFormData] as boolean
+                      }
                       onCheckedChange={(checked) =>
-                        handleInputChange(id as keyof PropertyFormData, checked as boolean)
+                        handleInputChange(
+                          id as keyof PropertyFormData,
+                          checked as boolean
+                        )
                       }
                       disabled={loading}
                     />
-                    <Label htmlFor={id} className="cursor-pointer">{label}</Label>
+                    <Label htmlFor={id} className="cursor-pointer">
+                      {label}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -807,7 +819,9 @@ export default function AddPropertyPage() {
         <Card>
           <CardHeader>
             <CardTitle>Pricing & Availability</CardTitle>
-            <CardDescription>Set your rental terms and pricing</CardDescription>
+            <CardDescription>
+              Set your rental terms and pricing
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -821,7 +835,9 @@ export default function AddPropertyPage() {
                   placeholder="3500"
                   min="0"
                   value={formData.rent_amount}
-                  onChange={(e) => handleInputChange("rent_amount", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("rent_amount", e.target.value)
+                  }
                   disabled={loading}
                 />
               </div>
@@ -833,7 +849,9 @@ export default function AddPropertyPage() {
                   placeholder="3500"
                   min="0"
                   value={formData.deposit_amount}
-                  onChange={(e) => handleInputChange("deposit_amount", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("deposit_amount", e.target.value)
+                  }
                   disabled={loading}
                 />
               </div>
@@ -844,7 +862,9 @@ export default function AddPropertyPage() {
                   type="date"
                   min={today}
                   value={formData.available_from}
-                  onChange={(e) => handleInputChange("available_from", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("available_from", e.target.value)
+                  }
                   disabled={loading}
                 />
               </div>
@@ -854,13 +874,19 @@ export default function AddPropertyPage() {
                 <Label>Preferred Lease Duration (months)</Label>
                 <Select
                   value={formData.lease_duration_months}
-                  onValueChange={(v) => handleInputChange("lease_duration_months", v)}
+                  onValueChange={(v) =>
+                    handleInputChange("lease_duration_months", v)
+                  }
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[6,12,18,24,36].map((m) => (
-                      <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>
+                    {[6, 12, 18, 24, 36].map((m) => (
+                      <SelectItem key={m} value={m.toString()}>
+                        {m} months
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -869,13 +895,19 @@ export default function AddPropertyPage() {
                 <Label>Minimum Lease Duration (months)</Label>
                 <Select
                   value={formData.minimum_lease_months}
-                  onValueChange={(v) => handleInputChange("minimum_lease_months", v)}
+                  onValueChange={(v) =>
+                    handleInputChange("minimum_lease_months", v)
+                  }
                   disabled={loading}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[3,6,12,18,24].map((m) => (
-                      <SelectItem key={m} value={m.toString()}>{m} months</SelectItem>
+                    {[3, 6, 12, 18, 24].map((m) => (
+                      <SelectItem key={m} value={m.toString()}>
+                        {m} months
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -888,7 +920,9 @@ export default function AddPropertyPage() {
         <Card>
           <CardHeader>
             <CardTitle>Property Images</CardTitle>
-            <CardDescription>Upload up to 10 photos of your property</CardDescription>
+            <CardDescription>
+              Upload up to 10 photos of your property
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
@@ -954,7 +988,9 @@ export default function AddPropertyPage() {
         <Card>
           <CardHeader>
             <CardTitle>Additional Amenities</CardTitle>
-            <CardDescription>Add any extra features not listed above</CardDescription>
+            <CardDescription>
+              Add any extra features not listed above
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex space-x-2">

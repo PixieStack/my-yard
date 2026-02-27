@@ -293,6 +293,7 @@ export default function AddPropertyPage() {
         code: dbError.code,
         details: dbError.details,
         hint: dbError.hint,
+        status: dbError.status,
       })
       throw new Error(`Image DB save failed: ${dbError.message} (code: ${dbError.code})`)
     }

@@ -37,6 +37,7 @@ interface Property {
   property_images: Array<{
     image_url: string
     is_primary: boolean
+    display_order: number
   }>
 }
 
@@ -47,7 +48,124 @@ interface LocationOption {
   display: string
 }
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 12
+
+function PropertyImage({
+  images,
+  title,
+  className = "",
+}: {
+  images: Array<{ image_url: string; is_primary: boolean; display_order: number }>
+  title: string
+  className?: string
+}) {
+  const [errored, setErrored] = useState(false)
+
+  const sorted = [...(images || [])].sort((a, b) => {
+    if (a.is_primary && !b.is_primary) return -1
+    if (!a.is_primary && b.is_primary) return 1
+    return (a.display_order ?? 0) - (b.display_order ?? 0)
+  })
+
+  const src = sorted[0]?.image_url
+
+  if (!src || errored) {
+    return (
+      <div className={`bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center ${className}`}>
+        <Building className="h-10 w-10 text-gray-400 mb-1" />
+        <span className="text-xs text-gray-400">No image</span>
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt={title}
+      className={`object-cover ${className}`}
+      onError={() => {
+        console.warn("❌ Image failed:", src.substring(0, 80))
+        setErrored(true)
+      }}
+      onLoad={() => console.log("✅ Image loaded:", src.substring(0, 60))}
+    />
+  )
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  onPageChange: (page: number) => void
+}) {
+  if (totalPages <= 1) return null
+
+  const goTo = (page: number) => {
+    onPageChange(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const getPages = (): (number | "...")[] => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
+    const pages: (number | "...")[] = [1]
+    if (currentPage > 3) pages.push("...")
+    const start = Math.max(2, currentPage - 1)
+    const end = Math.min(totalPages - 1, currentPage + 1)
+    for (let i = start; i <= end; i++) pages.push(i)
+    if (currentPage < totalPages - 2) pages.push("...")
+    pages.push(totalPages)
+    return pages
+  }
+
+  const start = (currentPage - 1) * ITEMS_PER_PAGE + 1
+  const end = Math.min(currentPage * ITEMS_PER_PAGE, totalItems)
+
+  return (
+    <div className="flex items-center justify-between pt-6 border-t mt-2">
+      <p className="text-sm text-gray-500">
+        Showing <span className="font-medium">{start}</span>–
+        <span className="font-medium">{end}</span> of{" "}
+        <span className="font-medium">{totalItems}</span> properties
+      </p>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline" size="sm" className="h-8 w-8 p-0"
+          onClick={() => goTo(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        {getPages().map((page, i) =>
+          page === "..." ? (
+            <span key={`e${i}`} className="px-2 text-gray-400 text-sm">...</span>
+          ) : (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              className="h-8 w-8 p-0 text-sm"
+              onClick={() => goTo(page as number)}
+            >
+              {page}
+            </Button>
+          )
+        )}
+        <Button
+          variant="outline" size="sm" className="h-8 w-8 p-0"
+          onClick={() => goTo(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 export default function BrowsePropertiesPage() {
   const { profile } = useAuth()
@@ -58,11 +176,8 @@ export default function BrowsePropertiesPage() {
   const [locationOptions, setLocationOptions] = useState<LocationOption[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
-
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "")
   const [selectedLocation, setSelectedLocation] = useState<string>("all")
   const [propertyType, setPropertyType] = useState<string>("all")
@@ -71,14 +186,11 @@ export default function BrowsePropertiesPage() {
   const [petsAllowed, setPetsAllowed] = useState<string>("all")
   const [showFilters, setShowFilters] = useState(false)
 
-  // ── Derived pagination values ──────────────────────────────────────────────
   const totalPages = Math.ceil(filteredProperties.length / ITEMS_PER_PAGE)
-  const paginatedProperties = filteredProperties.slice(
+  const paginated = filteredProperties.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   )
-
-  // ── Fetch ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     fetchProperties()
@@ -87,29 +199,16 @@ export default function BrowsePropertiesPage() {
 
   const fetchProperties = async () => {
     try {
+      console.log("🔍 Fetching properties...")
       const { data, error } = await supabase
         .from("properties")
         .select(`
-          id,
-          title,
-          description,
-          property_type,
-          rent_amount,
-          deposit_amount,
-          bedrooms,
-          bathrooms,
-          address,
-          location_name,
-          location_city,
-          location_province,
-          city,
-          province,
-          is_furnished,
-          pets_allowed,
-          created_at,
+          id, title, description, property_type,
+          rent_amount, deposit_amount, bedrooms, bathrooms,
+          address, location_name, location_city, location_province,
+          city, province, is_furnished, pets_allowed, created_at,
           property_images (
-            image_url,
-            is_primary
+            image_url, is_primary, display_order
           )
         `)
         .eq("status", "available")
@@ -117,7 +216,7 @@ export default function BrowsePropertiesPage() {
         .order("created_at", { ascending: false })
 
       if (error) {
-        console.error("❌ Error fetching properties:", {
+        console.error("❌ Fetch error:", {
           message: error.message,
           code: error.code,
           details: error.details,
@@ -127,45 +226,38 @@ export default function BrowsePropertiesPage() {
 
       const props = data || []
       console.log(`✅ Fetched ${props.length} properties`)
-
-      // Log image info for debugging
       props.forEach((p) => {
-        if (p.property_images?.length > 0) {
-          console.log(`Property "${p.title}" images:`, p.property_images.map(i => ({
-            url: i.image_url?.substring(0, 80),
-            is_primary: i.is_primary,
-            isBase64: i.image_url?.startsWith("data:"),
-            isSupabase: i.image_url?.includes("supabase"),
-          })))
-        }
+        const imgs = p.property_images || []
+        console.log(`📸 "${p.title}": ${imgs.length} images`, imgs.map(i => ({
+          primary: i.is_primary,
+          order: i.display_order,
+          url: i.image_url?.substring(0, 80),
+        })))
       })
 
       setProperties(props)
       setFilteredProperties(props)
 
-      // Build location options
-      const locationMap = new Map<string, LocationOption>()
+      const map = new Map<string, LocationOption>()
       props.forEach((p) => {
         const name = p.location_name || p.city || ""
         const city = p.location_city || p.city || ""
         const province = p.location_province || p.province || ""
         if (name) {
-          const key = `${name}-${city}`
-          if (!locationMap.has(key)) {
-            locationMap.set(key, {
-              name,
-              city,
-              province,
+          const key = `${name}|${city}`
+          if (!map.has(key)) {
+            map.set(key, {
+              name, city, province,
               display: city && city !== name ? `${name}, ${city}` : name,
             })
           }
         }
       })
       setLocationOptions(
-        Array.from(locationMap.values()).sort((a, b) => a.display.localeCompare(b.display))
+        Array.from(map.values()).sort((a, b) => a.display.localeCompare(b.display))
       )
     } catch (err: any) {
-      console.error("❌ Unexpected error:", err)
+      console.error("❌ Unexpected:", err)
     } finally {
       setLoading(false)
     }
@@ -174,65 +266,40 @@ export default function BrowsePropertiesPage() {
   const fetchFavorites = async () => {
     try {
       const { data } = await supabase
-        .from("favorites")
-        .select("property_id")
-        .eq("user_id", profile?.id)
+        .from("favorites").select("property_id").eq("user_id", profile?.id)
       setFavorites(new Set(data?.map((f) => f.property_id) || []))
-    } catch (error) {
-      console.error("Error fetching favorites:", error)
-    }
+    } catch (err) { console.error("Favorites error:", err) }
   }
 
-  // ── Filters ────────────────────────────────────────────────────────────────
-
   const applyFilters = useCallback(() => {
-    const filtered = properties.filter((property) => {
-      const locationText = [
-        property.location_name,
-        property.location_city,
-        property.location_province,
-        property.city,
-        property.province,
-        property.address,
+    const result = properties.filter((p) => {
+      const locText = [
+        p.location_name, p.location_city, p.location_province,
+        p.city, p.province, p.address,
       ].filter(Boolean).join(" ").toLowerCase()
 
-      const matchesSearch =
-        !searchTerm.trim() ||
-        property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        locationText.includes(searchTerm.toLowerCase())
+      const matchSearch = !searchTerm.trim() ||
+        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        locText.includes(searchTerm.toLowerCase())
 
-      const matchesLocation =
-        selectedLocation === "all" ||
-        property.location_name === selectedLocation ||
-        property.city === selectedLocation
+      const matchLocation = selectedLocation === "all" ||
+        p.location_name === selectedLocation || p.city === selectedLocation
 
-      const matchesType =
-        propertyType === "all" || property.property_type === propertyType
+      const matchType = propertyType === "all" || p.property_type === propertyType
+      const matchPrice = p.rent_amount >= priceRange[0] && p.rent_amount <= priceRange[1]
+      const matchFurnished = furnished === "all" || (furnished === "yes") === p.is_furnished
+      const matchPets = petsAllowed === "all" || (petsAllowed === "yes") === p.pets_allowed
 
-      const matchesPrice =
-        property.rent_amount >= priceRange[0] &&
-        property.rent_amount <= priceRange[1]
-
-      const matchesFurnished =
-        furnished === "all" || (furnished === "yes") === property.is_furnished
-
-      const matchesPets =
-        petsAllowed === "all" || (petsAllowed === "yes") === property.pets_allowed
-
-      return matchesSearch && matchesLocation && matchesType &&
-        matchesPrice && matchesFurnished && matchesPets
+      return matchSearch && matchLocation && matchType && matchPrice && matchFurnished && matchPets
     })
-
-    setFilteredProperties(filtered)
-    setCurrentPage(1) // Reset to page 1 on filter change
+    setFilteredProperties(result)
+    setCurrentPage(1)
   }, [searchTerm, selectedLocation, propertyType, priceRange, furnished, petsAllowed, properties])
 
   useEffect(() => {
     if (properties.length > 0) applyFilters()
   }, [applyFilters])
-
-  // ── Favorites ──────────────────────────────────────────────────────────────
 
   const toggleFavorite = async (propertyId: string) => {
     if (!profile?.id) return
@@ -245,24 +312,15 @@ export default function BrowsePropertiesPage() {
         await supabase.from("favorites").insert({ user_id: profile.id, property_id: propertyId })
         setFavorites((prev) => new Set(prev).add(propertyId))
       }
-    } catch (error) {
-      console.error("Error toggling favorite:", error)
-    }
+    } catch (err) { console.error("Favorite error:", err) }
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
-  const getLocationDisplay = (property: Property): string => {
-    if (property.location_name) {
-      return [property.location_name, property.location_city].filter(Boolean).join(", ")
-    }
-    if (property.city) {
-      return [property.city, property.province].filter(Boolean).join(", ")
-    }
-    return property.address || "Location not specified"
+  const getLocationDisplay = (p: Property) => {
+    if (p.location_name) return [p.location_name, p.location_city].filter(Boolean).join(", ")
+    return [p.city, p.province].filter(Boolean).join(", ") || p.address
   }
 
-  const getPropertyTypeLabel = (type: string) => {
+  const getTypeLabel = (type: string) => {
     switch (type) {
       case "room": return "Room"
       case "bachelor": return "Bachelor"
@@ -272,177 +330,20 @@ export default function BrowsePropertiesPage() {
   }
 
   const clearFilters = () => {
-    setSearchTerm("")
-    setSelectedLocation("all")
-    setPropertyType("all")
-    setPriceRange([0, 10000])
-    setFurnished("all")
-    setPetsAllowed("all")
+    setSearchTerm(""); setSelectedLocation("all"); setPropertyType("all")
+    setPriceRange([0, 10000]); setFurnished("all"); setPetsAllowed("all")
   }
 
-  const hasActiveFilters =
-    searchTerm !== "" ||
-    selectedLocation !== "all" ||
-    propertyType !== "all" ||
-    priceRange[0] > 0 ||
-    priceRange[1] < 10000 ||
-    furnished !== "all" ||
-    petsAllowed !== "all"
-
-  // ── Image component with fallback ──────────────────────────────────────────
-
-  const PropertyImage = ({
-    property,
-    className = "",
-    fill = false,
-  }: {
-    property: Property
-    className?: string
-    fill?: boolean
-  }) => {
-    const primaryImage =
-      property.property_images?.find((img) => img.is_primary)?.image_url ||
-      property.property_images?.[0]?.image_url
-
-    const [imgError, setImgError] = useState(false)
-
-    if (!primaryImage || imgError) {
-      return (
-        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
-          <Building className="h-10 w-10 text-gray-400 mb-1" />
-          <span className="text-xs text-gray-400">No image</span>
-        </div>
-      )
-    }
-
-    // ✅ Use regular <img> for both base64 and Supabase URLs
-    // This avoids Next.js Image domain configuration issues
-    return (
-      <img
-        src={primaryImage}
-        alt={property.title}
-        className={`w-full h-full object-cover ${className}`}
-        onError={() => {
-          console.warn(`❌ Image failed to load for property: ${property.title}`, primaryImage?.substring(0, 80))
-          setImgError(true)
-        }}
-        onLoad={() => console.log(`✅ Image loaded for: ${property.title}`)}
-      />
-    )
-  }
-
-  // ── Pagination Component ───────────────────────────────────────────────────
-
-  const Pagination = () => {
-    if (totalPages <= 1) return null
-
-    const getPageNumbers = () => {
-      const pages: (number | "...")[] = []
-
-      if (totalPages <= 7) {
-        return Array.from({ length: totalPages }, (_, i) => i + 1)
-      }
-
-      pages.push(1)
-
-      if (currentPage > 3) pages.push("...")
-
-      const start = Math.max(2, currentPage - 1)
-      const end = Math.min(totalPages - 1, currentPage + 1)
-
-      for (let i = start; i <= end; i++) pages.push(i)
-
-      if (currentPage < totalPages - 2) pages.push("...")
-
-      pages.push(totalPages)
-
-      return pages
-    }
-
-    return (
-      <div className="flex items-center justify-between pt-4 border-t">
-        {/* Info */}
-        <p className="text-sm text-gray-500">
-          Showing{" "}
-          <span className="font-medium">
-            {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-          </span>
-          –
-          <span className="font-medium">
-            {Math.min(currentPage * ITEMS_PER_PAGE, filteredProperties.length)}
-          </span>
-          {" "}of{" "}
-          <span className="font-medium">{filteredProperties.length}</span>
-          {" "}properties
-        </p>
-
-        {/* Controls */}
-        <div className="flex items-center gap-1">
-          {/* Prev */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setCurrentPage((p) => Math.max(1, p - 1))
-              window.scrollTo({ top: 0, behavior: "smooth" })
-            }}
-            disabled={currentPage === 1}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          {/* Page numbers */}
-          {getPageNumbers().map((page, i) =>
-            page === "..." ? (
-              <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">
-                ...
-              </span>
-            ) : (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setCurrentPage(page as number)
-                  window.scrollTo({ top: 0, behavior: "smooth" })
-                }}
-                className="h-8 w-8 p-0 text-sm"
-              >
-                {page}
-              </Button>
-            )
-          )}
-
-          {/* Next */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setCurrentPage((p) => Math.min(totalPages, p + 1))
-              window.scrollTo({ top: 0, behavior: "smooth" })
-            }}
-            disabled={currentPage === totalPages}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  // ── Loading ────────────────────────────────────────────────────────────────
+  const hasActiveFilters = searchTerm !== "" || selectedLocation !== "all" ||
+    propertyType !== "all" || priceRange[0] > 0 || priceRange[1] < 10000 ||
+    furnished !== "all" || petsAllowed !== "all"
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="h-8 bg-gray-200 rounded w-48 animate-pulse" />
-          <div className="h-10 bg-gray-200 rounded w-32 animate-pulse" />
-        </div>
+        <div className="h-8 bg-gray-200 rounded w-48 animate-pulse" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <div className="h-48 bg-gray-200 rounded-t-lg" />
               <CardHeader>
@@ -456,11 +357,8 @@ export default function BrowsePropertiesPage() {
     )
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Browse Properties</h2>
@@ -474,17 +372,13 @@ export default function BrowsePropertiesPage() {
           <Filter className="mr-2 h-4 w-4" />
           Filters
           {hasActiveFilters && (
-            <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center bg-blue-500 text-white text-xs rounded-full">
-              !
-            </Badge>
+            <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center bg-blue-500 text-white text-xs rounded-full">!</Badge>
           )}
         </Button>
       </div>
 
-      {/* Search & Filters */}
       <Card>
         <CardContent className="pt-6 space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -494,16 +388,13 @@ export default function BrowsePropertiesPage() {
               className="pl-10 pr-10"
             />
             {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
 
-          {/* Quick township chips */}
           {!showFilters && locationOptions.length > 0 && (
             <div className="flex flex-wrap gap-2">
               <button
@@ -518,7 +409,7 @@ export default function BrowsePropertiesPage() {
               </button>
               {locationOptions.slice(0, 8).map((loc) => (
                 <button
-                  key={`${loc.name}-${loc.city}`}
+                  key={`${loc.name}|${loc.city}`}
                   onClick={() => setSelectedLocation(loc.name)}
                   className={`px-3 py-1 rounded-full text-sm border transition-colors ${
                     selectedLocation === loc.name
@@ -540,26 +431,22 @@ export default function BrowsePropertiesPage() {
             </div>
           )}
 
-          {/* Expanded filters */}
           {showFilters && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 pt-2 border-t">
               <div>
                 <label className="text-sm font-medium mb-2 block">Township / Area</label>
                 <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Areas" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="All Areas" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Areas</SelectItem>
                     {locationOptions.map((loc) => (
-                      <SelectItem key={`${loc.name}-${loc.city}`} value={loc.name}>
+                      <SelectItem key={`${loc.name}|${loc.city}`} value={loc.name}>
                         {loc.display}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="text-sm font-medium mb-2 block">Property Type</label>
                 <Select value={propertyType} onValueChange={setPropertyType}>
@@ -572,7 +459,6 @@ export default function BrowsePropertiesPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="text-sm font-medium mb-2 block">Furnished</label>
                 <Select value={furnished} onValueChange={setFurnished}>
@@ -584,7 +470,6 @@ export default function BrowsePropertiesPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="text-sm font-medium mb-2 block">Pets Allowed</label>
                 <Select value={petsAllowed} onValueChange={setPetsAllowed}>
@@ -596,66 +481,39 @@ export default function BrowsePropertiesPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="md:col-span-2">
                 <label className="text-sm font-medium mb-2 block">
-                  Price Range: R{priceRange[0].toLocaleString()} —{" "}
-                  R{priceRange[1].toLocaleString()}{priceRange[1] >= 10000 ? "+" : ""}
+                  Price: R{priceRange[0].toLocaleString()} — R{priceRange[1].toLocaleString()}
+                  {priceRange[1] >= 10000 ? "+" : ""}
                 </label>
-                <Slider
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                  max={10000}
-                  min={0}
-                  step={500}
-                  className="w-full"
-                />
+                <Slider value={priceRange} onValueChange={setPriceRange}
+                  max={10000} min={0} step={500} className="w-full" />
               </div>
             </div>
           )}
 
-          {/* Active filter tags */}
           {hasActiveFilters && (
             <div className="flex items-center gap-2 flex-wrap pt-1 border-t">
               <span className="text-xs text-gray-500">Active:</span>
               {selectedLocation !== "all" && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   📍 {selectedLocation}
-                  <button onClick={() => setSelectedLocation("all")}>
-                    <X className="h-3 w-3 ml-1" />
-                  </button>
+                  <button onClick={() => setSelectedLocation("all")}><X className="h-3 w-3 ml-1" /></button>
                 </Badge>
               )}
               {propertyType !== "all" && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  🏠 {getPropertyTypeLabel(propertyType)}
-                  <button onClick={() => setPropertyType("all")}>
-                    <X className="h-3 w-3 ml-1" />
-                  </button>
+                  🏠 {getTypeLabel(propertyType)}
+                  <button onClick={() => setPropertyType("all")}><X className="h-3 w-3 ml-1" /></button>
                 </Badge>
               )}
               {(priceRange[0] > 0 || priceRange[1] < 10000) && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   💰 R{priceRange[0].toLocaleString()}–R{priceRange[1].toLocaleString()}
-                  <button onClick={() => setPriceRange([0, 10000])}>
-                    <X className="h-3 w-3 ml-1" />
-                  </button>
+                  <button onClick={() => setPriceRange([0, 10000])}><X className="h-3 w-3 ml-1" /></button>
                 </Badge>
               )}
-              {furnished !== "all" && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  🛋️ {furnished === "yes" ? "Furnished" : "Unfurnished"}
-                  <button onClick={() => setFurnished("all")}>
-                    <X className="h-3 w-3 ml-1" />
-                  </button>
-                </Badge>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs text-red-500 hover:text-red-600"
-                onClick={clearFilters}
-              >
+              <Button variant="ghost" size="sm" className="h-6 text-xs text-red-500" onClick={clearFilters}>
                 Clear all
               </Button>
             </div>
@@ -663,7 +521,6 @@ export default function BrowsePropertiesPage() {
         </CardContent>
       </Card>
 
-      {/* Results count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
           <span className="font-medium">{filteredProperties.length}</span>
@@ -673,32 +530,25 @@ export default function BrowsePropertiesPage() {
           )}
         </p>
         {totalPages > 1 && (
-          <p className="text-sm text-gray-500">
-            Page {currentPage} of {totalPages}
-          </p>
+          <p className="text-sm text-gray-500">Page {currentPage} of {totalPages}</p>
         )}
       </div>
 
-      {/* Properties Grid */}
-      {paginatedProperties.length > 0 ? (
+      {paginated.length > 0 ? (
         <>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {paginatedProperties.map((property) => {
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {paginated.map((property) => {
               const isFavorite = favorites.has(property.id)
-
               return (
-                <Card
-                  key={property.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  {/* Image */}
+                <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative h-48 bg-gray-100">
-                    <PropertyImage property={property} />
-
-                    {/* Favourite */}
+                    <PropertyImage
+                      images={property.property_images}
+                      title={property.title}
+                      className="w-full h-full"
+                    />
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant="ghost" size="sm"
                       className={`absolute top-2 right-2 h-8 w-8 p-0 rounded-full shadow ${
                         isFavorite ? "text-red-500 bg-white" : "text-gray-600 bg-white/90"
                       }`}
@@ -706,50 +556,37 @@ export default function BrowsePropertiesPage() {
                     >
                       <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
                     </Button>
-
-                    {/* Type badge */}
                     <div className="absolute bottom-2 left-2">
                       <Badge className="bg-black/60 text-white border-0 text-xs">
-                        {getPropertyTypeLabel(property.property_type)}
+                        {getTypeLabel(property.property_type)}
                       </Badge>
                     </div>
                   </div>
 
-                  {/* Header */}
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base line-clamp-1">
-                      {property.title}
-                    </CardTitle>
+                    <CardTitle className="text-base line-clamp-1">{property.title}</CardTitle>
                     <CardDescription className="flex items-center mt-1">
                       <MapPin className="h-3 w-3 mr-1 shrink-0" />
-                      <span className="line-clamp-1">
-                        {getLocationDisplay(property)}
-                      </span>
+                      <span className="line-clamp-1">{getLocationDisplay(property)}</span>
                     </CardDescription>
                   </CardHeader>
 
-                  {/* Content */}
                   <CardContent>
                     <div className="space-y-3">
-                      {/* Stats */}
                       <div className="flex items-center space-x-3 text-sm text-gray-600">
                         <div className="flex items-center">
-                          <Bed className="h-4 w-4 mr-1" />
-                          {property.bedrooms}
+                          <Bed className="h-4 w-4 mr-1" />{property.bedrooms}
                         </div>
                         <div className="flex items-center">
-                          <Bath className="h-4 w-4 mr-1" />
-                          {property.bathrooms}
+                          <Bath className="h-4 w-4 mr-1" />{property.bathrooms}
                         </div>
                         {property.is_furnished && (
                           <Badge variant="secondary" className="text-xs">Furnished</Badge>
                         )}
                         {property.pets_allowed && (
-                          <Badge variant="secondary" className="text-xs">🐾 Pets OK</Badge>
+                          <Badge variant="secondary" className="text-xs">🐾 Pets</Badge>
                         )}
                       </div>
-
-                      {/* Price */}
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="flex items-center text-lg font-bold text-green-600">
@@ -761,25 +598,20 @@ export default function BrowsePropertiesPage() {
                         {property.deposit_amount > 0 && (
                           <div className="text-right">
                             <div className="text-xs text-gray-500">Deposit</div>
-                            <div className="text-sm font-medium text-gray-700">
+                            <div className="text-sm font-medium">
                               R{property.deposit_amount.toLocaleString()}
                             </div>
                           </div>
                         )}
                       </div>
-
-                      {/* Actions */}
                       <div className="flex space-x-2 pt-1">
                         <Link href={`/tenant/properties/${property.id}`} className="flex-1">
                           <Button variant="outline" size="sm" className="w-full bg-transparent">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
+                            <Eye className="mr-2 h-4 w-4" />View
                           </Button>
                         </Link>
                         <Link href={`/tenant/properties/${property.id}/apply`}>
-                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                            Apply
-                          </Button>
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Apply</Button>
                         </Link>
                       </div>
                     </div>
@@ -788,26 +620,24 @@ export default function BrowsePropertiesPage() {
               )
             })}
           </div>
-
-          {/* Pagination */}
-          <Pagination />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredProperties.length}
+            onPageChange={setCurrentPage}
+          />
         </>
       ) : (
         <Card>
           <CardContent className="text-center py-12">
             <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No properties found
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
             <p className="text-gray-600 mb-4">
-              {hasActiveFilters
-                ? `No properties match your criteria${selectedLocation !== "all" ? ` in ${selectedLocation}` : ""}`
-                : "No properties are currently available"}
+              {hasActiveFilters ? "Try adjusting your search or filters" : "No properties available"}
             </p>
             {hasActiveFilters && (
               <Button variant="outline" onClick={clearFilters}>
-                <X className="mr-2 h-4 w-4" />
-                Clear Filters
+                <X className="mr-2 h-4 w-4" />Clear Filters
               </Button>
             )}
           </CardContent>
