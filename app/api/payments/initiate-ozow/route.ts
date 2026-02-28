@@ -14,6 +14,7 @@ function getSupabaseClient() {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const { leaseId, tenantId, amount, description } = await request.json();
 
     if (!leaseId || !tenantId || !amount) {
