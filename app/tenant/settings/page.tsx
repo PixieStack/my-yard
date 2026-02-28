@@ -147,7 +147,7 @@ export default function TenantSettingsPage() {
           property:properties(title, address)
         `)
         .eq("tenant_id", profile?.id)
-        .eq("status", "active")
+        .eq("is_active", true)
 
       if (error) {
         console.error("Error fetching active leases:", error instanceof Error ? error.message : JSON.stringify(error))
