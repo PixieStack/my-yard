@@ -3,10 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 import { OzowPaymentService } from '@/lib/ozow';
 import { notifyPaymentReceived, notifyAdminFeeRequired } from '@/lib/notifications-extended';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+// Create Supabase client lazily to avoid build errors
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase configuration missing');
+  }
+  return createClient(url, key);
+}
 
 /**
  * Ozow Payment Webhook Callback
