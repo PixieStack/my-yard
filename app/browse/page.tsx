@@ -136,10 +136,10 @@ export default function PropertiesPage() {
 
     // Filter by price range
     if (minPrice) {
-      filtered = filtered.filter((p) => p.price_per_month >= parseInt(minPrice));
+      filtered = filtered.filter((p) => getRentAmount(p) >= parseInt(minPrice));
     }
     if (maxPrice) {
-      filtered = filtered.filter((p) => p.price_per_month <= parseInt(maxPrice));
+      filtered = filtered.filter((p) => getRentAmount(p) <= parseInt(maxPrice));
     }
 
     // Filter by bedrooms
