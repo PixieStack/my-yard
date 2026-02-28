@@ -118,9 +118,10 @@ export default function PropertiesPage() {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (p) =>
-          p.title.toLowerCase().includes(lowerSearch) ||
-          p.location.toLowerCase().includes(lowerSearch) ||
-          p.description.toLowerCase().includes(lowerSearch)
+          (p.title || '').toLowerCase().includes(lowerSearch) ||
+          (p.location || p.address || '').toLowerCase().includes(lowerSearch) ||
+          (p.description || '').toLowerCase().includes(lowerSearch) ||
+          (p.township || '').toLowerCase().includes(lowerSearch)
       );
     }
 
