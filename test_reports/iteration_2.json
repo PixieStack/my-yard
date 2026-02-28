@@ -20,8 +20,8 @@
     "integration_issues": [
       {
         "flow": "External URL API access",
-        "issue": "External URL (https://analyze-my-yard.preview.emergentagent.com) returns intermittent 502 errors on API routes - likely preview environment infrastructure issue. Localhost works perfectly.",
-        "issue": "External URL (https://analyze-my-yard.preview.emergentagent.com) returns intermittent 502 errors on API routes - likely preview environment infrastructure issue. Localhost works perfectly.",
+        "issue": "External URL (https://sa-property-hub.preview.emergentagent.com) returns intermittent 502 errors on API routes - likely preview environment infrastructure issue. Localhost works perfectly.",
+        "issue": "External URL (https://sa-property-hub.preview.emergentagent.com) returns intermittent 502 errors on API routes - likely preview environment infrastructure issue. Localhost works perfectly.",
         "affected_selectors": []
       }
     ],

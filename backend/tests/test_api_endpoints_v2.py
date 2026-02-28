@@ -9,8 +9,8 @@ import requests
 
 # Use localhost for API testing (external URL has intermittent 502 issues in preview environment)
 BASE_URL = "http://localhost:3000"
-EXTERNAL_URL = "https://analyze-my-yard.preview.emergentagent.com"
-EXTERNAL_URL = "https://analyze-my-yard.preview.emergentagent.com"
+EXTERNAL_URL = "https://sa-property-hub.preview.emergentagent.com"
+EXTERNAL_URL = "https://sa-property-hub.preview.emergentagent.com"
 
 class TestTownshipsAPI:
     """Townships API endpoint tests - 873 SA townships"""
