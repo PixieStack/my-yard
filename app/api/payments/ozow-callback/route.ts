@@ -19,6 +19,7 @@ function getSupabaseClient() {
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const data = await request.json();
     console.log('Ozow callback received:', data);
 
