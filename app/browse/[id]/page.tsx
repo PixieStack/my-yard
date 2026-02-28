@@ -86,10 +86,10 @@ export default function PublicPropertyDetailPage() {
   const handleApply = () => {
     if (!user) {
       // Redirect to login with return URL
-      router.push(`/auth/login?redirect=/browse/${id}`)
+      router.push(`/auth/login?redirect=/tenant/properties/${id}/viewing`)
     } else {
-      // Go to application page
-      router.push(`/tenant/properties/${id}`)
+      // Go to viewing request page (Step 1 of the flow)
+      router.push(`/tenant/properties/${id}/viewing`)
     }
   }
 
@@ -275,14 +275,18 @@ export default function PublicPropertyDetailPage() {
                 <Button
                   onClick={handleApply}
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-lg"
+                  data-testid="apply-property-btn"
                 >
-                  Apply for This Property
+                  Request a Viewing
                 </Button>
                 {!user && (
                   <p className="text-xs text-orange-700 mt-3 text-center">
-                    You will be asked to sign in to complete your application
+                    You will be asked to sign in to request a viewing
                   </p>
                 )}
+                <p className="text-xs text-gray-600 mt-2 text-center">
+                  Step 1: Request Viewing → Step 2: Apply → Step 3: Sign Lease
+                </p>
               </CardContent>
             </Card>
 

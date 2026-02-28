@@ -363,9 +363,9 @@ export default function PropertyDetailPage() {
                     </Link>
                   </div>
                 ) : (
-                  <Link href={`/tenant/properties/${property.id}/apply`}>
-                    <Button className="w-full" size="lg">
-                      Apply Now
+                  <Link href={`/tenant/properties/${property.id}/viewing`}>
+                    <Button className="w-full" size="lg" data-testid="request-viewing-btn">
+                      Request a Viewing
                     </Button>
                   </Link>
                 )}
