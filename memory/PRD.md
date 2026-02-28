@@ -129,6 +129,6 @@ profiles, properties, property_images, applications, viewing_requests, messages,
 - Iteration 3: 17/17 passed (100%)
 
 ## Environment
-- App URL: https://code-analyzer-284.preview.emergentagent.com
+- App URL: https://analyze-my-yard.preview.emergentagent.com
 - Supabase: https://ffkvytgvdqipscackxyg.supabase.co
 - SMTP: Brevo (smtp-relay.brevo.com:587)
