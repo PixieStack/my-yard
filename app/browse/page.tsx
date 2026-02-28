@@ -42,6 +42,11 @@ interface Property {
 
 const PROPERTIES_PER_PAGE = 12;
 
+// Helper function to get the rental price (handles both price_per_month and rent_amount)
+const getRentAmount = (property: Property): number => {
+  return property.price_per_month || property.rent_amount || 0;
+};
+
 export default function PropertiesPage() {
   const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
