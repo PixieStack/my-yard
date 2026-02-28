@@ -21,13 +21,15 @@ interface Property {
   id: string;
   title: string;
   description: string;
-  price_per_month: number;
+  price_per_month?: number;
+  rent_amount?: number;
   bedrooms: number;
   bathrooms: number;
   size_sqm: number;
   property_type: 'apartment' | 'house' | 'townhouse' | 'flat' | 'room' | 'bachelor' | 'cottage';
   location: string;
   township: string;
+  address?: string;
   image_url?: string;
   verified: boolean;
   created_at: string;
