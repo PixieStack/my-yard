@@ -372,29 +372,29 @@ export default function PropertiesPage() {
                         {/* Location */}
                         <div className="flex items-center text-gray-600 text-sm mb-3">
                           <MapPin className="w-4 h-4 mr-1" />
-                          {property.location}, {property.township}
+                          {property.location || property.address || 'Location not specified'}, {property.township}
                         </div>
 
                         {/* Details */}
                         <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                           <div className="flex items-center gap-1">
                             <Bed className="w-4 h-4" />
-                            {property.bedrooms} Beds
+                            {property.bedrooms || 0} Beds
                           </div>
                           <div className="flex items-center gap-1">
                             <Bath className="w-4 h-4" />
-                            {property.bathrooms} Baths
+                            {property.bathrooms || 0} Baths
                           </div>
                           <div className="flex items-center gap-1">
                             <Maximize2 className="w-4 h-4" />
-                            {property.size_sqm}m²
+                            {property.size_sqm || 0}m²
                           </div>
                         </div>
 
                         {/* Price */}
                         <div className="border-t pt-3 mb-3">
                           <p className="text-2xl font-bold text-orange-600">
-                            R{property.price_per_month ? property.price_per_month.toLocaleString() : 'N/A'}
+                            R{getRentAmount(property).toLocaleString()}
                             <span className="text-sm text-gray-600 font-normal">/month</span>
                           </p>
                         </div>
